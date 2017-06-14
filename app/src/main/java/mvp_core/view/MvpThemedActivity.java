@@ -1,21 +1,33 @@
-package chuprin.serg.mvpcore.view;
+package mvp_core.view;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 
-import chuprin.serg.mvpcore.MvpPresenter;
-import chuprin.serg.mvpcore.PresenterHelper;
+import org.polaric.colorful.ColorfulActivity;
+
+import mvp_core.ComponentHolder;
+import mvp_core.MvpPresenter;
+import mvp_core.PresenterHelper;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 
 
-public abstract class MvpActivity<PRESENTER extends MvpPresenter>
-        extends AppCompatActivity
-        implements MvpView {
+public abstract class MvpThemedActivity<PRESENTER extends MvpPresenter>
+        extends ColorfulActivity
+        implements MvpView, ComponentHolder {
 
     private PresenterHelper<PRESENTER> helper;
     private CompositeSubscription mCompositeSubscription;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected void onCreate(@Nullable Bundle state) {
+        super.onCreate(state);
+        setContentView(getLayoutRes());
+        mCompositeSubscription = new CompositeSubscription();
+        helper = new PresenterHelper<>(this, state);
+        helper.attachView();
+    }
 
     @Override
     protected void onResume() {
@@ -24,19 +36,9 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected void onCreate(@Nullable Bundle state) {
-        super.onCreate(state);
-        setContentView(getLayoutRes());
-        mCompositeSubscription = new CompositeSubscription();
-        helper = new PresenterHelper<>(this, createComponent(state));
-        helper.attachView();
-    }
-
-    @Override
     protected void onStop() {
         super.onStop();
-        mCompositeSubscription.clear();
+        unsubscribeAll();
     }
 
     @Override
@@ -58,9 +60,12 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         mCompositeSubscription.add(subscription);
     }
 
+    protected void unsubscribeAll() {
+        mCompositeSubscription.clear();
+    }
+
     protected PRESENTER getPresenter() {
         return helper.getPresenter();
     }
 
-    protected abstract Object createComponent(@Nullable Bundle state);
 }

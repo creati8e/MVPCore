@@ -1,4 +1,4 @@
-package chuprin.serg.mvpcore.view;
+package mvp_core.view;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
@@ -8,23 +8,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import chuprin.serg.mvpcore.MvpPresenter;
-import chuprin.serg.mvpcore.PresenterHelper;
+import mvp_core.ComponentHolder;
+import mvp_core.MvpPresenter;
+import mvp_core.PresenterHelper;
 
 
 public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragment
-        implements MvpView {
+        implements MvpView, ComponentHolder {
 
     private PresenterHelper<PRESENTER> helper;
-
-    @LayoutRes
-    protected abstract int getLayoutRes();
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        helper = new PresenterHelper<>(this, createComponent(savedInstanceState));
-    }
 
     @Nullable
     @Override
@@ -33,16 +25,19 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
         return inflater.inflate(getLayoutRes(), container, false);
     }
 
+    @LayoutRes
+    protected abstract int getLayoutRes();
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        helper = new PresenterHelper<>(this, savedInstanceState);
+    }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedState) {
         super.onViewCreated(view, savedState);
         helper.attachView();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        helper.resume();
     }
 
     @Override
@@ -58,9 +53,13 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
         helper = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        helper.resume();
+    }
+
     protected PRESENTER getPresenter() {
         return helper.getPresenter();
     }
-
-    protected abstract Object createComponent(@Nullable Bundle savedState);
 }

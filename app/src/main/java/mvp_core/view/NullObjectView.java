@@ -1,4 +1,4 @@
-package chuprin.serg.mvpcore.view;
+package mvp_core.view;
 
 import java.lang.ref.WeakReference;
 

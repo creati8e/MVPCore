@@ -1,26 +1,27 @@
-package chuprin.serg.mvpcore.view;
+package mvp_core.view;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
 
-import chuprin.serg.mvpcore.MvpPresenter;
-import chuprin.serg.mvpcore.PresenterHelper;
+import mvp_core.ComponentHolder;
+import mvp_core.MvpPresenter;
+import mvp_core.PresenterHelper;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 
 
 public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends BottomSheetDialogFragment
-        implements MvpView {
+        implements MvpView, ComponentHolder {
 
     private PresenterHelper<PRESENTER> helper;
-    private CompositeSubscription mCompositeSubscription;
+    private CompositeSubscription compositeSubscription;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCompositeSubscription = new CompositeSubscription();
-        helper = new PresenterHelper<>(this, createComponent(savedInstanceState));
+        compositeSubscription = new CompositeSubscription();
+        helper = new PresenterHelper<>(this, savedInstanceState);
         helper.attachView();
     }
 
@@ -31,9 +32,16 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends Bot
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        helper.stop(getActivity().isChangingConfigurations());
+        helper = null;
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
-        mCompositeSubscription.clear();
+        compositeSubscription.clear();
     }
 
     @Override
@@ -42,17 +50,9 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends Bot
         helper.resume();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        helper.stop(getActivity().isChangingConfigurations());
-        helper = null;
-    }
-
     @SuppressWarnings("unused")
     protected void addSubscription(Subscription subscription) {
-        mCompositeSubscription.add(subscription);
+        compositeSubscription.add(subscription);
     }
 
-    protected abstract Object createComponent(@Nullable Bundle savedState);
 }

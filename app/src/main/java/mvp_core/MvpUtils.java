@@ -1,4 +1,4 @@
-package chuprin.serg.mvpcore;
+package mvp_core;
 
 public class MvpUtils {
     public static boolean isInterfaceSubType(Class<?> clazz, Class<?> targetClass) {

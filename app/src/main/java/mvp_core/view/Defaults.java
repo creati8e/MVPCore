@@ -1,4 +1,4 @@
-package chuprin.serg.mvpcore.view;
+package mvp_core.view;
 
 import java.util.Collections;
 import java.util.HashMap;

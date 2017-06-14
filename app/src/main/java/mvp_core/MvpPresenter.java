@@ -1,7 +1,7 @@
-package chuprin.serg.mvpcore;
+package mvp_core;
 
-import chuprin.serg.mvpcore.view.MvpView;
-import chuprin.serg.mvpcore.view.NullObjectView;
+import mvp_core.view.MvpView;
+import mvp_core.view.NullObjectView;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 
