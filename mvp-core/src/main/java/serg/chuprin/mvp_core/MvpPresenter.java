@@ -1,5 +1,7 @@
 package serg.chuprin.mvp_core;
 
+import android.support.annotation.CallSuper;
+
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.view.MvpView;
@@ -9,6 +11,10 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
     private CompositeSubscription viewSubscription = new CompositeSubscription();
     private NullObjectView<VIEW> view = new NullObjectView<>();
     private boolean viewAttached;
+
+    @CallSuper
+    protected MvpPresenter() {
+    }
 
     final void attachView(VIEW view) {
         if (!viewAttached) {

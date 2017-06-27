@@ -5,4 +5,7 @@ import serg.chuprin.mvp_core.annotations.InjectViewState;
 
 @InjectViewState
 public abstract class CustomPresenter extends MvpPresenter<CustomView> {
+    CustomPresenter() {
+        super();
+    }
 }

@@ -8,4 +8,6 @@ dependencies {
     compileOnly 'io.reactivex:rxandroid:1.2.1'
 
     compileOnly 'com.google.android:android:1.6_r2'
+    compileOnly project(':stub-android')
+    compileOnly project(':stub-viewstate-provider')
 }

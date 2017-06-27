@@ -60,7 +60,7 @@ class ViewStateGenerator {
         defaultStrategy = AddToEndSingleStrategy.class;
     }
 
-    boolean generate() {
+    String generate() {
         String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
         TypeSpec stateClass = TypeSpec.classBuilder(stateName)
                 .superclass(ParameterizedTypeName.get(ClassName.get(ViewState.class), viewInterface))
@@ -76,9 +76,9 @@ class ViewStateGenerator {
             JavaFile.builder(packageName, stateClass).build().writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return "";
         }
-        return true;
+        return String.format("%s.%s", packageName, stateName);
     }
 
     private Iterable<TypeSpec> createInnerCommandClasses() {

@@ -2,6 +2,8 @@ package serg.chuprin.processor;
 
 import com.google.common.reflect.TypeToken;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -57,6 +59,8 @@ public class MvpProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
+        List<Pair<TypeElement, String>> presenterViewParis = new ArrayList<>();
+
         for (Element annotatedElem : roundEnv.getElementsAnnotatedWith(InjectViewState.class)) {
 
             if (annotatedElem.getKind().isInterface()) {
@@ -70,11 +74,19 @@ public class MvpProcessor extends AbstractProcessor {
                 return true;
             }
 
-            TypeMirror superclass = ((TypeElement) annotatedElem).getSuperclass();
-            TypeMirror viewType = ((DeclaredType) superclass).getTypeArguments().get(0);
+            TypeElement elemAsType = (TypeElement) annotatedElem;
+            TypeMirror viewType = ((DeclaredType) elemAsType.getSuperclass()).getTypeArguments().get(0);
 
-            if (!new ViewStateGenerator(viewType, filer, typeUtils).generate()) {
+            String viewStateClassName = new ViewStateGenerator(viewType, filer, typeUtils).generate();
+            if (viewStateClassName.isEmpty()) {
                 error(annotatedElem, "Failed to generate class");
+                return true;
+            }
+            presenterViewParis.add(new Pair<>(elemAsType, viewStateClassName));
+        }
+        if (!presenterViewParis.isEmpty()) {
+            if (!new ViewStateProviderGenerator(filer, presenterViewParis).generate()) {
+                error(null, "Failed to generate ViewState factory class");
                 return true;
             }
         }
