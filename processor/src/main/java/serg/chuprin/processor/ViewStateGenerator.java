@@ -1,5 +1,6 @@
 package serg.chuprin.processor;
 
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -17,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -24,13 +26,16 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import serg.chuprin.mvp_core.annotations.StateStrategyType;
 import serg.chuprin.mvp_core.viewstate.ViewCommand;
 import serg.chuprin.mvp_core.viewstate.ViewState;
-import serg.chuprin.mvp_core.viewstate.strategy.SkipStrategy;
+import serg.chuprin.mvp_core.viewstate.strategy.AddToEndSingleStrategy;
+import serg.chuprin.mvp_core.viewstate.strategy.StateStrategy;
 
 class ViewStateGenerator {
 
@@ -44,6 +49,7 @@ class ViewStateGenerator {
     private final TypeElement viewElement;
     private final ClassName viewInterface;
     private final ClassName viewCommandName;
+    private final Class<? extends StateStrategy> defaultStrategy;
 
     ViewStateGenerator(TypeMirror mirror, Filer filer, Types typeUtils) {
         this.filer = filer;
@@ -51,6 +57,7 @@ class ViewStateGenerator {
         viewElement = (TypeElement) typeUtils.asElement(mirror);
         viewInterface = ClassName.get(viewElement);
         viewCommandName = ClassName.get(ViewCommand.class);
+        defaultStrategy = AddToEndSingleStrategy.class;
     }
 
     boolean generate() {
@@ -75,17 +82,20 @@ class ViewStateGenerator {
     }
 
     private Iterable<TypeSpec> createInnerCommandClasses() {
-        List<TypeSpec> classes = new ArrayList<>();
+        Class<? extends StateStrategy> viewStrategy = getElemStrategyOrDefault(viewElement, defaultStrategy);
 
+        List<TypeSpec> classes = new ArrayList<>();
         for (Element elem : viewElement.getEnclosedElements()) {
             if (elem.getKind() == ElementKind.METHOD) {
-                classes.add(createCommandClass((ExecutableElement) elem));
+
+                classes.add(createCommandClass((ExecutableElement) elem,
+                        getElemStrategyOrDefault(elem, viewStrategy)));
             }
         }
         return classes;
     }
 
-    private TypeSpec createCommandClass(ExecutableElement method) {
+    private TypeSpec createCommandClass(ExecutableElement method, Class<? extends StateStrategy> strategy) {
         Iterable<ParameterSpec> methodParams = getMethodParams(method);
 
         return TypeSpec.classBuilder(getCapitalizedName(method) + COMMAND_SUFFIX)
@@ -93,7 +103,7 @@ class ViewStateGenerator {
                 .addTypeVariables(getTypeVariables(method))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addFields(createCommandFields(methodParams))
-                .addMethod(createCommandConstructor(method, methodParams))
+                .addMethod(createCommandConstructor(method, methodParams, strategy))
                 .addMethod(createExecuteMethod(method, methodParams))
                 .build();
     }
@@ -111,8 +121,9 @@ class ViewStateGenerator {
                     param.type,
                     param.name,
                     Modifier.FINAL,
-                    Modifier.PUBLIC
-            ).build());
+                    Modifier.PUBLIC)
+                    .addAnnotations(param.annotations)
+                    .build());
         }
 
         return fields;
@@ -141,11 +152,12 @@ class ViewStateGenerator {
     }
 
     private MethodSpec createCommandConstructor(ExecutableElement method,
-                                                Iterable<ParameterSpec> methodParams) {
+                                                Iterable<ParameterSpec> methodParams,
+                                                Class<? extends StateStrategy> strategy) {
         MethodSpec.Builder builder = MethodSpec.constructorBuilder()
                 .varargs(method.isVarArgs())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("super(new $T())", SkipStrategy.class)
+                .addStatement("super(new $T())", strategy)
                 .addParameters(methodParams);
 
         for (ParameterSpec param : methodParams) {
@@ -217,9 +229,41 @@ class ViewStateGenerator {
     private Iterable<ParameterSpec> getMethodParams(ExecutableElement method) {
         List<ParameterSpec> params = new ArrayList<>();
 
-        for (VariableElement element : method.getParameters()) {
-            params.add(ParameterSpec.get(element));
+        for (VariableElement parameter : method.getParameters()) {
+
+            params.add(ParameterSpec.builder(
+                    TypeName.get(parameter.asType()),
+                    parameter.getSimpleName().toString())
+                    .addAnnotations(getMethodParamAnnotations(parameter))
+                    .build());
         }
         return params;
+    }
+
+    private List<AnnotationSpec> getMethodParamAnnotations(VariableElement parameter) {
+        List<AnnotationSpec> annotations = new ArrayList<>();
+
+        for (AnnotationMirror annotationMirror : parameter.getAnnotationMirrors()) {
+            annotations.add(AnnotationSpec.get(annotationMirror));
+        }
+        return annotations;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<? extends StateStrategy> getElemStrategyOrDefault(
+            Element element,
+            Class<? extends StateStrategy> fallbackStrategy) {
+
+        StateStrategyType annotation = element.getAnnotation(StateStrategyType.class);
+        try {
+            return annotation == null ? fallbackStrategy : annotation.value();
+        } catch (MirroredTypeException mte) {
+            try {
+                return (Class<? extends StateStrategy>) Class.forName(mte.getTypeMirror().toString());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            return fallbackStrategy;
+        }
     }
 }
