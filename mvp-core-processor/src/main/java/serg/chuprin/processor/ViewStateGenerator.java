@@ -32,8 +32,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import serg.chuprin.mvp_core.annotations.StateStrategyType;
+import serg.chuprin.mvp_core.viewstate.MvpViewState;
 import serg.chuprin.mvp_core.viewstate.ViewCommand;
-import serg.chuprin.mvp_core.viewstate.ViewState;
 import serg.chuprin.mvp_core.viewstate.strategy.AddToEndSingleStrategy;
 import serg.chuprin.mvp_core.viewstate.strategy.StateStrategy;
 
@@ -63,7 +63,7 @@ class ViewStateGenerator {
     String generate() {
         String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
         TypeSpec stateClass = TypeSpec.classBuilder(stateName)
-                .superclass(ParameterizedTypeName.get(ClassName.get(ViewState.class), viewInterface))
+                .superclass(ParameterizedTypeName.get(ClassName.get(MvpViewState.class), viewInterface))
                 .addSuperinterface(viewInterface)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addTypes(createInnerCommandClasses())

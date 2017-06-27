@@ -17,7 +17,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
@@ -31,17 +30,12 @@ public class MvpProcessor extends AbstractProcessor {
     private static Messager messager;
     private Types typeUtils;
     private Filer filer;
-    private Elements elementUtils;
 
     static void error(Element element, String message, Object... args) {
         message(Diagnostic.Kind.ERROR, element, message, args);
     }
 
-    static void info(Element element, String message, Object... args) {
-        message(Diagnostic.Kind.NOTE, element, message, args);
-    }
-
-    static void message(Diagnostic.Kind kind, Element element, String message, Object... args) {
+    private static void message(Diagnostic.Kind kind, Element element, String message, Object... args) {
         messager.printMessage(
                 kind,
                 String.format(message, args),
@@ -54,7 +48,6 @@ public class MvpProcessor extends AbstractProcessor {
         typeUtils = processingEnv.getTypeUtils();
         messager = processingEnv.getMessager();
         filer = processingEnv.getFiler();
-        elementUtils = processingEnv.getElementUtils();
     }
 
     @Override
@@ -70,7 +63,7 @@ public class MvpProcessor extends AbstractProcessor {
             }
 
             if (!isPresenterSubclass(annotatedElem)) {
-                error(annotatedElem, "Cannot inject ViewState in class which are not child of MvpPresenter");
+                error(annotatedElem, "Cannot inject MvpViewState in class which are not child of MvpPresenter");
                 return true;
             }
 
@@ -86,7 +79,7 @@ public class MvpProcessor extends AbstractProcessor {
         }
         if (!presenterViewParis.isEmpty()) {
             if (!new ViewStateProviderGenerator(filer, presenterViewParis).generate()) {
-                error(null, "Failed to generate ViewState factory class");
+                error(null, "Failed to generate MvpViewState factory class");
                 return true;
             }
         }

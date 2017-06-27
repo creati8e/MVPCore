@@ -11,3 +11,7 @@ dependencies {
     compileOnly project(':stub-android')
     compileOnly project(':stub-viewstate-provider')
 }
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
