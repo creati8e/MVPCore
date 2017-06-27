@@ -28,5 +28,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     provided project(':mvp-core')
-    apt project(':processor')
+    apt project(':mvp-core-processor')
 }
