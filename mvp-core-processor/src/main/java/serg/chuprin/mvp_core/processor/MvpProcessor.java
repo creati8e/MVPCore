@@ -1,4 +1,4 @@
-package serg.chuprin.processor;
+package serg.chuprin.mvp_core.processor;
 
 import java.util.ArrayList;
 import java.util.List;

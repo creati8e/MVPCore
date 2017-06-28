@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import javax.inject.Inject;
 
-import serg.chuprin.MvpActivity;
+import serg.chuprin.mvp_core.android.MvpActivity;
 import serg.chuprin.sample.R;
 import serg.chuprin.sample.SampleApplication;
 import serg.chuprin.sample.UserPresenter;

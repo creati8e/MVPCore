@@ -1,4 +1,4 @@
-package serg.chuprin;
+package serg.chuprin.mvp_core.android;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;

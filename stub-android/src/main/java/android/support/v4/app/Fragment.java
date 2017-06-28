@@ -5,12 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * Date: 30-Sen-16
- * Time: 07:04
- *
- * @author Yuri Shmakov
- */
 public class Fragment {
     public void onCreate(Bundle savedInstanceState) {
         throw new RuntimeException("Stub!");

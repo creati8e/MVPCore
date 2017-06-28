@@ -1,39 +1,27 @@
-package serg.chuprin;
+package serg.chuprin.mvp_core.android;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.design.widget.BottomSheetDialogFragment;
 
+import rx.Subscription;
+import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.PresenterHelper;
 import serg.chuprin.mvp_core.view.MvpView;
 
 
-public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragment
+public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends BottomSheetDialogFragment
         implements MvpView, ComponentHolder {
 
     private PresenterHelper<PRESENTER> helper;
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(getLayoutRes(), container, false);
-    }
-
-    protected abstract int getLayoutRes();
+    private CompositeSubscription compositeSubscription;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        compositeSubscription = new CompositeSubscription();
         helper = new PresenterHelper<>(this, savedInstanceState);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedState) {
-        super.onViewCreated(view, savedState);
         helper.attachView();
     }
 
@@ -51,12 +39,20 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        compositeSubscription.clear();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         helper.resume();
     }
 
-    protected PRESENTER getPresenter() {
-        return helper.getPresenter();
+    @SuppressWarnings("unused")
+    protected void addSubscription(Subscription subscription) {
+        compositeSubscription.add(subscription);
     }
+
 }
