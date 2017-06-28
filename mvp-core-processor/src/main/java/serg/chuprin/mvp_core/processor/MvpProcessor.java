@@ -73,8 +73,10 @@ public class MvpProcessor extends AbstractProcessor {
                 return true;
             }
 
-            TypeElement viewType = getViewType(presenterType);
-            String viewStateClassName = new ViewStateGenerator(viewType, filer, typeUtils).generate();
+            String viewStateClassName = new ViewStateGenerator(
+                    getViewType(presenterType),
+                    filer,
+                    typeUtils).generate();
             if (viewStateClassName.isEmpty()) {
                 error(annotatedElem, "Failed to generate viewState");
                 return true;
@@ -126,8 +128,6 @@ public class MvpProcessor extends AbstractProcessor {
             if (viewFromSuperclass != null) {
                 checkViews(presenterType, viewType, viewFromSuperclass);
             }
-        }
-        if (viewType != null) {
             return viewType;
         }
         return viewFromType == null ? viewFromSuperclass : viewFromType;

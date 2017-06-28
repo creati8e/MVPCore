@@ -11,9 +11,10 @@ public abstract class ViewCommand<V extends MvpView> {
         this.stateStrategy = stateStrategy;
     }
 
-    public abstract void execute(V view);
-
     public StateStrategy getStateStrategy() {
         return stateStrategy;
     }
+
+    public abstract void execute(V view);
+
 }

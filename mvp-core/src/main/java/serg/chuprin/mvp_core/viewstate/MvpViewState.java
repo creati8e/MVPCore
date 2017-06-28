@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import serg.chuprin.mvp_core.view.MvpView;
-import serg.chuprin.mvp_core.viewstate.strategy.StateStrategy;
 
 public class MvpViewState<V extends MvpView> {
     private final Queue<ViewCommand<V>> commands = new LinkedList<>();
@@ -40,13 +39,11 @@ public class MvpViewState<V extends MvpView> {
     }
 
     private void beforeApply(ViewCommand<V> command) {
-        StateStrategy stateStrategy = command.getStateStrategy();
-        stateStrategy.beforeApply(commands, command);
+        command.getStateStrategy().beforeApply(commands, command);
     }
 
     private void afterApply(ViewCommand<V> command) {
-        StateStrategy stateStrategy = command.getStateStrategy();
-        stateStrategy.beforeApply(commands, command);
+        command.getStateStrategy().beforeApply(commands, command);
     }
 
     public void destroyView() {
