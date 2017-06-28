@@ -1,5 +1,7 @@
 package serg.chuprin.mvp_core.processor;
 
+import com.google.auto.service.AutoService;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +10,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
@@ -24,6 +27,7 @@ import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.annotations.InjectViewState;
 import serg.chuprin.mvp_core.view.MvpView;
 
+@AutoService(Processor.class)
 @SupportedAnnotationTypes("serg.chuprin.mvp_core.annotations.InjectViewState")
 public class MvpProcessor extends AbstractProcessor {
 
