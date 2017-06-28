@@ -4,10 +4,12 @@ import javax.inject.Inject;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import serg.chuprin.mvp_core.annotations.InjectViewState;
 import serg.chuprin.sample.model.User;
 import serg.chuprin.sample.model.UserInteractor;
 import serg.chuprin.sample.view.UserView;
 
+@InjectViewState()
 public class UserPresenter extends BasePresenter<UserView> {
 
     private final UserInteractor interactor;

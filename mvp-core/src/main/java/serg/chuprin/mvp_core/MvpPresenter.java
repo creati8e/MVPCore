@@ -17,6 +17,7 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
     @CallSuper
     protected MvpPresenter() {
         viewState = (MvpViewState<VIEW>) MvpViewStateProvider.getViewState(this.getClass());
+        viewStateAsView = (VIEW) viewState;
     }
 
     final void attachView(VIEW view) {

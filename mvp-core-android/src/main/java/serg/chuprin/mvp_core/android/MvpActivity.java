@@ -15,13 +15,21 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         extends AppCompatActivity
         implements MvpView, ComponentHolder {
 
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
     private PresenterHelper<PRESENTER> helper;
-    private CompositeSubscription compositeSubscription;
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        compositeSubscription.clear();
+    @SuppressWarnings("unchecked")
+    protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        setContentView(getLayoutRes());
+        helper = new PresenterHelper<>(this, state);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        helper.attachView();
     }
 
     @Override
@@ -31,29 +39,25 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected void onCreate(Bundle state) {
-        super.onCreate(state);
-        setContentView(getLayoutRes());
-        compositeSubscription = new CompositeSubscription();
-        helper = new PresenterHelper<>(this, state);
-        helper.attachView();
-    }
-
-    protected abstract int getLayoutRes();
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        helper.stop(isChangingConfigurations());
-        helper = null;
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         helper.saveState(outState);
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        helper.stop(isChangingConfigurations());
+        compositeSubscription.clear();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        helper = null;
+    }
+
+    protected abstract int getLayoutRes();
 
     protected void addSubscription(Subscription subscription) {
         compositeSubscription.add(subscription);

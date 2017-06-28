@@ -14,15 +14,25 @@ import serg.chuprin.mvp_core.view.MvpView;
 public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends BottomSheetDialogFragment
         implements MvpView, ComponentHolder {
 
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
     private PresenterHelper<PRESENTER> helper;
-    private CompositeSubscription compositeSubscription;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        compositeSubscription = new CompositeSubscription();
         helper = new PresenterHelper<>(this, savedInstanceState);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         helper.attachView();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        helper.resume();
     }
 
     @Override
@@ -32,22 +42,16 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends Bot
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        helper.stop(getActivity().isChangingConfigurations());
-        helper = null;
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
+        helper.stop(getActivity().isChangingConfigurations());
         compositeSubscription.clear();
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        helper.resume();
+    public void onDestroy() {
+        super.onDestroy();
+        helper = null;
     }
 
     @SuppressWarnings("unused")

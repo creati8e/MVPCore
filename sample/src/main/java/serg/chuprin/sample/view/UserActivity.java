@@ -1,7 +1,6 @@
 package serg.chuprin.sample.view;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 import javax.inject.Inject;
@@ -25,19 +24,12 @@ public class UserActivity extends MvpActivity<UserPresenter> implements UserView
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
-        Log.i("tag", "create");
         findViewById(R.id.text).setSaveEnabled(false);
     }
 
     @Override
     public Object createComponent() {
         return SampleApplication.appComponent.userComponent(new UserModule());
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i("tag", "destroy");
     }
 
     @Override

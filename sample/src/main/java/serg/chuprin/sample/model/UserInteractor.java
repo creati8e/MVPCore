@@ -17,7 +17,7 @@ public class UserInteractor {
 
     public Single<User> getUser() {
         return Single.just(new User(UUID.randomUUID().toString().substring(0, 10)))
-                .delay(3, TimeUnit.SECONDS)
+                .delay(1, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.newThread());
     }
 }

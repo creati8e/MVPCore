@@ -28,8 +28,8 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
+    compile "com.android.support:design:$project.ext.supportVersion"
+    compile "com.android.support:appcompat-v7:$project.ext.supportVersion"
 
     testCompile 'junit:junit:4.12'
 
@@ -44,4 +44,8 @@ dependencies {
     //rxjava
     compile 'io.reactivex:rxjava:1.2.6'
     compile 'io.reactivex:rxandroid:1.2.1'
+
+    //ui
+    compile 'com.afollestad.material-dialogs:core:0.9.1.0'
+    compile 'com.afollestad.material-dialogs:commons:0.9.1.0'
 }

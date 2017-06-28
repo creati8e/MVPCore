@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import rx.Subscription;
+import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.PresenterHelper;
@@ -15,15 +17,8 @@ import serg.chuprin.mvp_core.view.MvpView;
 public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragment
         implements MvpView, ComponentHolder {
 
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
     private PresenterHelper<PRESENTER> helper;
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(getLayoutRes(), container, false);
-    }
-
-    protected abstract int getLayoutRes();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,9 +27,21 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedState) {
-        super.onViewCreated(view, savedState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(getLayoutRes(), container, false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         helper.attachView();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        helper.resume();
     }
 
     @Override
@@ -44,16 +51,22 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onStop() {
+        super.onStop();
         helper.stop(getActivity().isChangingConfigurations());
-        helper = null;
+        compositeSubscription.clear();
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        helper.resume();
+    public void onDestroy() {
+        super.onDestroy();
+        helper = null;
+    }
+
+    protected abstract int getLayoutRes();
+
+    protected void addSubscription(Subscription subscription) {
+        compositeSubscription.add(subscription);
     }
 
     protected PRESENTER getPresenter() {
