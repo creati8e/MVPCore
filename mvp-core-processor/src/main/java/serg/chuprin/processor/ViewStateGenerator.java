@@ -51,15 +51,18 @@ class ViewStateGenerator {
     private final ClassName viewCommandName;
     private final Class<? extends StateStrategy> defaultStrategy;
 
-    ViewStateGenerator(TypeMirror mirror, Filer filer, Types typeUtils) {
+    ViewStateGenerator(TypeElement viewElem, Filer filer, Types typeUtils) {
         this.filer = filer;
         this.typeUtils = typeUtils;
-        viewElement = (TypeElement) typeUtils.asElement(mirror);
+        viewElement = viewElem;
         viewInterface = ClassName.get(viewElement);
         viewCommandName = ClassName.get(ViewCommand.class);
         defaultStrategy = AddToEndSingleStrategy.class;
     }
 
+    /**
+     * @return generated ViewState full class name
+     */
     String generate() {
         String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
         TypeSpec stateClass = TypeSpec.classBuilder(stateName)
@@ -253,17 +256,18 @@ class ViewStateGenerator {
     private Class<? extends StateStrategy> getElemStrategyOrDefault(
             Element element,
             Class<? extends StateStrategy> fallbackStrategy) {
-
-        StateStrategyType annotation = element.getAnnotation(StateStrategyType.class);
         try {
-            return annotation == null ? fallbackStrategy : annotation.value();
+            StateStrategyType annotation = element.getAnnotation(StateStrategyType.class);
+            if (annotation != null) {
+                annotation.value();
+            }
         } catch (MirroredTypeException mte) {
             try {
                 return (Class<? extends StateStrategy>) Class.forName(mte.getTypeMirror().toString());
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            return fallbackStrategy;
         }
+        return fallbackStrategy;
     }
 }

@@ -1,6 +1,7 @@
 package serg.chuprin.processor;
 
 import com.google.common.reflect.TypeToken;
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -52,6 +53,9 @@ public class ViewStateProviderGenerator {
                 Object.class);
 
         return TypeSpec.classBuilder(FACTORY_CLASS_NAME)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
+                        .addMember("value", "{$N}", "\"unchecked\"")
+                        .build())
                 .addField(FieldSpec.builder(mapType,
                         MAP_FIELD,
                         Modifier.PRIVATE,

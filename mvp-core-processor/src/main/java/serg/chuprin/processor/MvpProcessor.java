@@ -1,7 +1,5 @@
 package serg.chuprin.processor;
 
-import com.google.common.reflect.TypeToken;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +13,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -28,11 +28,15 @@ import serg.chuprin.mvp_core.view.MvpView;
 public class MvpProcessor extends AbstractProcessor {
 
     private static Messager messager;
-    private Types typeUtils;
+    private static Types typeUtils;
     private Filer filer;
 
     static void error(Element element, String message, Object... args) {
         message(Diagnostic.Kind.ERROR, element, message, args);
+    }
+
+    static void warning(Element element, String message, Object... args) {
+        message(Diagnostic.Kind.WARNING, element, message, args);
     }
 
     private static void message(Diagnostic.Kind kind, Element element, String message, Object... args) {
@@ -62,20 +66,20 @@ public class MvpProcessor extends AbstractProcessor {
                 return true;
             }
 
-            if (!isPresenterSubclass(annotatedElem)) {
+            TypeElement presenterType = (TypeElement) annotatedElem;
+
+            if (!Utils.isSubclass(typeUtils, presenterType, MvpPresenter.class)) {
                 error(annotatedElem, "Cannot inject MvpViewState in class which are not child of MvpPresenter");
                 return true;
             }
 
-            TypeElement elemAsType = (TypeElement) annotatedElem;
-            TypeMirror viewType = ((DeclaredType) elemAsType.getSuperclass()).getTypeArguments().get(0);
-
+            TypeElement viewType = getViewType(presenterType);
             String viewStateClassName = new ViewStateGenerator(viewType, filer, typeUtils).generate();
             if (viewStateClassName.isEmpty()) {
-                error(annotatedElem, "Failed to generate class");
+                error(annotatedElem, "Failed to generate viewState");
                 return true;
             }
-            presenterViewParis.add(new Pair<>(elemAsType, viewStateClassName));
+            presenterViewParis.add(new Pair<>(presenterType, viewStateClassName));
         }
         if (!presenterViewParis.isEmpty()) {
             if (!new ViewStateProviderGenerator(filer, presenterViewParis).generate()) {
@@ -91,17 +95,93 @@ public class MvpProcessor extends AbstractProcessor {
         return SourceVersion.latestSupported();
     }
 
-    private boolean isPresenterSubclass(Element annotatedElement) {
-        TypeElement presenterElem = (TypeElement) annotatedElement;
+    private TypeElement getViewType(TypeElement presenterType) {
 
-        TypeToken<MvpPresenter<? extends MvpView>> presenterToken = new TypeToken<MvpPresenter<? extends MvpView>>() {
-        };
-        String presenterClassName = presenterToken.getRawType().getName();
+        TypeElement viewType = null;
 
-        String presenterSuperclassName = typeUtils.erasure(presenterElem
-                .getSuperclass())
-                .toString();
+        try {
+            presenterType.getAnnotation(InjectViewState.class).view();
+        } catch (MirroredTypeException mte) {
+            TypeMirror typeMirror = mte.getTypeMirror();
+            if (!typeMirror.toString().contains(MvpView.class.getName())) {
+                viewType = (TypeElement) typeUtils.asElement(typeMirror);
+            }
+        }
 
-        return presenterSuperclassName.equals(presenterClassName);
+        TypeElement viewFromType = getViewFromPresenterTypeParams(presenterType);
+        TypeElement viewFromSuperclass = getViewFromPresenterSuperclassTypeArg(presenterType);
+
+        if (viewFromType != null && viewType == null) {
+            warning(presenterType,
+                    "Your presenter is typed. Mvp-core will try to retrieve your view from type params.\n" +
+                            " Better specify your view in annotation", presenterType);
+        }
+
+        if (viewType != null) {
+
+            if (viewFromType != null) {
+                checkViews(presenterType, viewType, viewFromType);
+            }
+
+            if (viewFromSuperclass != null) {
+                checkViews(presenterType, viewType, viewFromSuperclass);
+            }
+        }
+        if (viewType != null) {
+            return viewType;
+        }
+        return viewFromType == null ? viewFromSuperclass : viewFromType;
     }
+
+    private void checkViews(TypeElement presenter, TypeElement view1, TypeElement view2) {
+        if (!typeUtils.isSubtype(view1.asType(), view2.asType())) {
+            showViewNotSubclassError(presenter, view1, view2);
+        }
+    }
+
+    /**
+     * @param presenterType
+     * @return TypeElement for View : MvpView or null if not found
+     */
+    private TypeElement getViewFromPresenterTypeParams(TypeElement presenterType) {
+
+        for (TypeParameterElement typeParam : presenterType.getTypeParameters()) {
+            for (TypeMirror bound : typeParam.getBounds()) {
+
+                Element possibleViewType = typeUtils.asElement(bound);
+                if (possibleViewType.toString().contains(MvpView.class.getName())) {
+                    return (TypeElement) possibleViewType;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param presenter
+     * @return TypeElement for View : MvpView or null if not found
+     */
+    private TypeElement getViewFromPresenterSuperclassTypeArg(TypeElement presenter) {
+        DeclaredType superclass = (DeclaredType) presenter.getSuperclass();
+
+        List<? extends TypeMirror> typeArguments = superclass.getTypeArguments();
+        for (TypeMirror arg : typeArguments) {
+
+            Element possibleView = typeUtils.asElement(arg);
+            if (possibleView != null && possibleView instanceof TypeElement
+                    && Utils.isImplementingInterface((TypeElement) possibleView, MvpView.class)) {
+                return (TypeElement) possibleView;
+            }
+        }
+        return null;
+    }
+
+    private void showViewNotSubclassError(TypeElement presenter, TypeElement element1, TypeElement element2) {
+        error(presenter,
+                "You specified view in annotation: " + element1.getSimpleName().toString()
+                        + " but it's not subclass of view specified in presenter's parameter: "
+                        + element2.getSimpleName().toString()
+                , presenter);
+    }
+
 }
