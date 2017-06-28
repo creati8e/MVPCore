@@ -30,6 +30,7 @@ public class PresenterHelper<PRESENTER extends MvpPresenter> {
         presenter.detachView();
         if (!isRecreating && !retainComponent) {
             componentCache.delete(component);
+            presenter.destroyView();
         }
     }
 

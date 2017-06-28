@@ -35,6 +35,14 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
         unsubscribeAll();
     }
 
+    /**
+     * this method always called after {@link #detachView()
+     * so there is not necessary to detach view and unsubscribe
+     */
+    final void destroyView() {
+        viewState.destroyView();
+    }
+
     final protected VIEW getViewState() {
         return viewStateAsView;
     }
@@ -50,4 +58,5 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
     final protected void subscribeView(Subscription subscription) {
         viewSubscription.add(subscription);
     }
+
 }

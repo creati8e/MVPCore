@@ -48,4 +48,8 @@ public class MvpViewState<V extends MvpView> {
         StateStrategy stateStrategy = command.getStateStrategy();
         stateStrategy.beforeApply(commands, command);
     }
+
+    public void destroyView() {
+        commands.clear();
+    }
 }
