@@ -24,7 +24,7 @@ public class ViewStateProviderGenerator {
 
     private static final String FACTORY_CLASS_NAME = "MvpViewStateProvider";
     private static final String MAP_FIELD = "viewStatesMap";
-    private static final String GET_VIEW_STATE_METHOD = "getViewState";
+    private static final String GET_VIEW_STATE_METHOD = "getView";
     private static final String PRESENTER_PARAM = "presenter";
     private final Filer filer;
     private final List<Pair<TypeElement, String>> presenterViewParis;

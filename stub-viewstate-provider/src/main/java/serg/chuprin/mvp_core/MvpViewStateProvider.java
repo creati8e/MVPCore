@@ -7,7 +7,7 @@ public class MvpViewStateProvider {
 
     private static final Map<Class<?>, Object> viewStatesMap = new HashMap<>();
 
-    public static Object getViewState(Class<?> presenter) {
+    public static Object getView(Class<?> presenter) {
         return viewStatesMap.get(presenter);
     }
 }

@@ -7,14 +7,14 @@ import serg.chuprin.mvp_core.view.MvpView;
 import serg.chuprin.mvp_core.viewstate.ViewCommand;
 
 public class AddToEndSingleStrategy implements StateStrategy {
+
     @Override
-    public <V extends MvpView> void beforeApply(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
+    public <V extends MvpView> void beforeExecute(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
         Iterator<ViewCommand<V>> iterator = currentCommands.iterator();
 
         while (iterator.hasNext()) {
-            ViewCommand<V> entry = iterator.next();
 
-            if (entry.getClass() == command.getClass()) {
+            if (iterator.next().getClass() == command.getClass()) {
                 iterator.remove();
                 break;
             }
@@ -24,7 +24,6 @@ public class AddToEndSingleStrategy implements StateStrategy {
     }
 
     @Override
-    public <V extends MvpView> void afterApply(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
-
+    public <V extends MvpView> void afterExecute(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
     }
 }
