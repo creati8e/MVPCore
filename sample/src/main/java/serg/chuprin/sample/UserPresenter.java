@@ -13,7 +13,6 @@ import serg.chuprin.sample.view.UserView;
 public class UserPresenter extends BasePresenter<UserView> {
 
     private final UserInteractor interactor;
-    private boolean firstLaunch = true;
 
     @Inject
     public UserPresenter(UserInteractor interactor) {
@@ -23,13 +22,13 @@ public class UserPresenter extends BasePresenter<UserView> {
 
     @Override
     protected void onViewAttached() {
-        if (firstLaunch) {
+        if (isFirstAttach()) {
             interactor.getUser()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Action1<User>() {
                         @Override
                         public void call(User user) {
-                            getViewState().showUsername(user.getUsername());
+                            getView().showUsername(user.getUsername());
                         }
                     }, new Action1<Throwable>() {
                         @Override
@@ -38,7 +37,5 @@ public class UserPresenter extends BasePresenter<UserView> {
                         }
                     });
         }
-        firstLaunch = false;
-
     }
 }

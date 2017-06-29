@@ -5,58 +5,80 @@ import android.support.annotation.CallSuper;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.view.MvpView;
+import serg.chuprin.mvp_core.view.nullView.NullObjectView;
 import serg.chuprin.mvp_core.viewstate.MvpViewState;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "WeakerAccess", "unused"})
 public abstract class MvpPresenter<VIEW extends MvpView> {
     private final MvpViewState<VIEW> viewState;
+    private final CompositeSubscription viewSubscription = new CompositeSubscription();
     private VIEW viewStateAsView;
-    private CompositeSubscription viewSubscription = new CompositeSubscription();
+    private NullObjectView<VIEW> nullObjectView;
     private boolean viewAttached;
+    private boolean isFirstAttach = true;
 
     @CallSuper
     protected MvpPresenter() {
-        viewState = (MvpViewState<VIEW>) MvpViewStateProvider.getViewState(this.getClass());
+        viewState = (MvpViewState<VIEW>) MvpViewStateProvider.getView(this.getClass());
         viewStateAsView = (VIEW) viewState;
-    }
 
-    final void attachView(VIEW view) {
-        if (!viewAttached) {
-            viewState.attachView(view);
-            viewStateAsView = (VIEW) viewState;
-            viewAttached = true;
-            onViewAttached();
+        if (viewState == null) {
+            nullObjectView = new NullObjectView<>();
         }
     }
 
+    final void attachView(VIEW view) {
+        if (viewAttached) {
+            return;
+        }
+        if (viewState != null) {
+            viewState.attachView(view);
+            viewStateAsView = (VIEW) viewState;
+        } else {
+            nullObjectView.setView(view);
+        }
+
+        viewAttached = true;
+        onViewAttached();
+        isFirstAttach = false;
+    }
+
     final void detachView() {
-        viewState.detachView();
+        if (!viewAttached) {
+            return;
+        }
+        if (viewState != null) {
+            viewState.detachView();
+        } else {
+            nullObjectView.removeView();
+        }
         viewAttached = false;
         unsubscribeAll();
     }
 
-    /**
-     * this method always called after {@link #detachView()
-     * so there is not necessary to detach view and unsubscribe
-     */
     final void destroyView() {
-        viewState.destroyView();
+        if (viewState != null) {
+            viewState.destroyView();
+        }
     }
 
-    final protected VIEW getViewState() {
-        return viewStateAsView;
+    protected final VIEW getView() {
+        return viewStateAsView != null ? viewStateAsView : nullObjectView.get();
     }
 
     protected void onViewAttached() {
 
     }
 
-    final protected void unsubscribeAll() {
+    protected final void unsubscribeAll() {
         viewSubscription.clear();
     }
 
-    final protected void subscribeView(Subscription subscription) {
+    protected final void subscribeView(Subscription subscription) {
         viewSubscription.add(subscription);
     }
 
+    protected boolean isFirstAttach() {
+        return isFirstAttach;
+    }
 }

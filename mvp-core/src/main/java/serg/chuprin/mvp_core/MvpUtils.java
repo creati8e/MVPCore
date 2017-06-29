@@ -5,8 +5,7 @@ public class MvpUtils {
         if (clazz.equals(targetClass)) {
             return true;
         }
-        Class[] superInterfaces = clazz.getInterfaces();
-        for (Class superInterface : superInterfaces) {
+        for (Class superInterface : clazz.getInterfaces()) {
             if (isInterfaceSubType(superInterface, targetClass)) {
                 return true;
             }

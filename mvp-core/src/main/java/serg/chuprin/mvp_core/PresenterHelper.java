@@ -14,16 +14,16 @@ public class PresenterHelper<PRESENTER extends MvpPresenter> {
     private final ComponentCache componentCache = ComponentCache.getInstance();
     private final MvpView view;
     private final Object component;
+    private final ComponentHolder holder;
+    private final PRESENTER presenter;
     private boolean isRecreating;
-    private PRESENTER presenter;
-    private ComponentHolder holder;
 
     public <V extends MvpView & ComponentHolder> PresenterHelper(V viewHolder, Bundle bundle) {
         view = viewHolder;
         holder = viewHolder;
         component = findCachedComponent(bundle);
         inject();
-        setPresenter(view);
+        presenter = findPresenter();
     }
 
     public void stop(boolean retainComponent) {
@@ -49,25 +49,26 @@ public class PresenterHelper<PRESENTER extends MvpPresenter> {
         return presenter;
     }
 
-    private void setPresenter(MvpView view) {
+    public void resume() {
+        isRecreating = false;
+    }
+
+    //region internal
+
+    private PRESENTER findPresenter() {
         for (Field field : view.getClass().getDeclaredFields()) {
             if (MvpUtils.isClassSubType(field.getType().getSuperclass(), MvpPresenter.class)) {
                 try {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);
                     }
-                    presenter = (PRESENTER) field.get(view);
+                    return (PRESENTER) field.get(view);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
             }
         }
-    }
-
-    //region internal
-
-    public void resume() {
-        isRecreating = false;
+        throw new IllegalStateException("Presenter is null; Did you config dagger component correctly?");
     }
 
     private void inject() {

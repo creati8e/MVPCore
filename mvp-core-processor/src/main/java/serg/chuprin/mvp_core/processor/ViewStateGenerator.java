@@ -37,7 +37,7 @@ import javax.lang.model.util.Types;
 import serg.chuprin.mvp_core.annotations.StateStrategyType;
 import serg.chuprin.mvp_core.viewstate.MvpViewState;
 import serg.chuprin.mvp_core.viewstate.ViewCommand;
-import serg.chuprin.mvp_core.viewstate.strategy.AddToEndSingleStrategy;
+import serg.chuprin.mvp_core.viewstate.strategy.AddToEndSingleOneExecutionStrategy;
 import serg.chuprin.mvp_core.viewstate.strategy.StateStrategy;
 
 class ViewStateGenerator {
@@ -45,7 +45,7 @@ class ViewStateGenerator {
     private static final String VIEW_STATE_SUFFIX = "$$ViewState";
     private static final String COMMAND_SUFFIX = "Command";
     private static final String EXECUTE_METHOD_NAME = "execute";
-    private static final String APPLY_COMMAND_METHOD = "applyCommand";
+    private static final String EXECUTE_COMMAND_METHOD = "executeCommand";
     private static final String VIEW_PARAM = "view";
     private final Filer filer;
     private final Types typeUtils;
@@ -63,7 +63,7 @@ class ViewStateGenerator {
         viewElement = viewElem;
         viewInterface = ClassName.get(viewElement);
         viewCommandName = ClassName.get(ViewCommand.class);
-        defaultStrategy = AddToEndSingleStrategy.class;
+        defaultStrategy = AddToEndSingleOneExecutionStrategy.class;
     }
 
     boolean generate() {
@@ -198,7 +198,7 @@ class ViewStateGenerator {
 
         CodeBlock code = CodeBlock.builder()
                 .addStatement("$N(new " + commandClassName + "($N))",
-                        APPLY_COMMAND_METHOD,
+                        EXECUTE_COMMAND_METHOD,
                         getMethodParamsForCaller(methodParams).toString())
                 .build();
 

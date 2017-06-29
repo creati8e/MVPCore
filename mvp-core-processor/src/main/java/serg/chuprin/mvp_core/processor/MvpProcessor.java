@@ -28,14 +28,21 @@ import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.annotations.InjectViewState;
 import serg.chuprin.mvp_core.view.MvpView;
 
+/**
+ * Really we don't need to @Inject annotation support.
+ * This is a little workaround for case when there is no @InjectViewState annotation,
+ * but we need to generate ViewStateProvider anyway.
+ * It's assumed that Mvp-core can't be used without dagger, so @Inject annotation always present.
+ */
 @AutoService(Processor.class)
-@SupportedAnnotationTypes("serg.chuprin.mvp_core.annotations.InjectViewState")
+@SupportedAnnotationTypes({"serg.chuprin.mvp_core.annotations.InjectViewState", "javax.inject.Inject"})
 public class MvpProcessor extends AbstractProcessor {
 
     private static Messager messager;
     private static Types typeUtils;
     private Filer filer;
     private Elements elemUtils;
+    private boolean providerGenerated;
 
     static void error(Element element, String message, Object... args) {
         message(Diagnostic.Kind.ERROR, element, message, args);
@@ -99,11 +106,13 @@ public class MvpProcessor extends AbstractProcessor {
             }
             presenterViewParis.add(new Pair<>(presenterType, viewStateClassName));
         }
-        if (!presenterViewParis.isEmpty()) {
+        if (!providerGenerated) {
+
             if (!new ViewStateProviderGenerator(filer, presenterViewParis).generate()) {
-                error(null, "Failed to generate MvpViewState factory class");
+                error(null, "Failed to generate MvpViewState provider class");
                 return true;
             }
+            providerGenerated = true;
         }
         return true;
     }
