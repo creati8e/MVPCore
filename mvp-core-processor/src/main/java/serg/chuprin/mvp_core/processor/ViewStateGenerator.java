@@ -15,7 +15,9 @@ import com.squareup.javapoet.TypeVariableName;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.AnnotationMirror;
@@ -29,6 +31,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import serg.chuprin.mvp_core.annotations.StateStrategyType;
@@ -46,31 +49,32 @@ class ViewStateGenerator {
     private static final String VIEW_PARAM = "view";
     private final Filer filer;
     private final Types typeUtils;
+    private final Elements elemUtils;
     private final TypeElement viewElement;
     private final ClassName viewInterface;
     private final ClassName viewCommandName;
     private final Class<? extends StateStrategy> defaultStrategy;
 
-    ViewStateGenerator(TypeElement viewElem, Filer filer, Types typeUtils) {
+    ViewStateGenerator(TypeElement viewElem, Filer filer, Types typeUtils, Elements elemUtils) {
         this.filer = filer;
         this.typeUtils = typeUtils;
+        this.elemUtils = elemUtils;
+
         viewElement = viewElem;
         viewInterface = ClassName.get(viewElement);
         viewCommandName = ClassName.get(ViewCommand.class);
         defaultStrategy = AddToEndSingleStrategy.class;
     }
 
-    /**
-     * @return generated ViewState full class name
-     */
-    String generate() {
+    boolean generate() {
         String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
+        List<ExecutableElement> allMethods = getAllMethods();
         TypeSpec stateClass = TypeSpec.classBuilder(stateName)
                 .superclass(ParameterizedTypeName.get(ClassName.get(MvpViewState.class), viewInterface))
                 .addSuperinterface(viewInterface)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addTypes(createInnerCommandClasses())
-                .addMethods(createViewMethods())
+                .addTypes(createInnerCommandClasses(allMethods))
+                .addMethods(createViewMethods(allMethods))
                 .build();
 
         String packageName = viewElement.getEnclosingElement().getSimpleName().toString();
@@ -79,21 +83,24 @@ class ViewStateGenerator {
             JavaFile.builder(packageName, stateClass).build().writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
-            return "";
+            return false;
         }
+        return true;
+    }
+
+    String getClassName() {
+        String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
+        String packageName = viewElement.getEnclosingElement().getSimpleName().toString();
         return String.format("%s.%s", packageName, stateName);
     }
 
-    private Iterable<TypeSpec> createInnerCommandClasses() {
+    private Iterable<TypeSpec> createInnerCommandClasses(List<ExecutableElement> allMethods) {
         Class<? extends StateStrategy> viewStrategy = getElemStrategyOrDefault(viewElement, defaultStrategy);
 
         List<TypeSpec> classes = new ArrayList<>();
-        for (Element elem : viewElement.getEnclosedElements()) {
-            if (elem.getKind() == ElementKind.METHOD) {
 
-                classes.add(createCommandClass((ExecutableElement) elem,
-                        getElemStrategyOrDefault(elem, viewStrategy)));
-            }
+        for (ExecutableElement elem : allMethods) {
+            classes.add(createCommandClass(elem, getElemStrategyOrDefault(elem, viewStrategy)));
         }
         return classes;
     }
@@ -169,19 +176,16 @@ class ViewStateGenerator {
         return builder.build();
     }
 
-    private Iterable<MethodSpec> createViewMethods() {
+    private Iterable<MethodSpec> createViewMethods(List<ExecutableElement> allMethods) {
         List<MethodSpec> methods = new ArrayList<>();
 
-        for (Element elem : viewElement.getEnclosedElements()) {
-            if (elem.getKind() == ElementKind.METHOD) {
-                ExecutableElement method = (ExecutableElement) elem;
+        for (ExecutableElement method : allMethods) {
 
-                if (method.getReturnType().getKind() == TypeKind.VOID) {
-                    methods.add(createViewMethod(method));
-                } else {
-                    MvpProcessor.error(method, "In canonical MVP all view methods should be 'void': ",
-                            method.getSimpleName().toString());
-                }
+            if (method.getReturnType().getKind() == TypeKind.VOID) {
+                methods.add(createViewMethod(method));
+            } else {
+                MvpProcessor.error(method, "In canonical MVP all view methods should be 'void': ",
+                        method.getSimpleName().toString());
             }
         }
         return methods;
@@ -269,5 +273,34 @@ class ViewStateGenerator {
             }
         }
         return fallbackStrategy;
+    }
+
+    private List<ExecutableElement> getAllMethods() {
+        List<ExecutableElement> allMethods = new ArrayList<>();
+
+        Queue<TypeElement> elements = new LinkedList<>();
+        elements.add(viewElement);
+
+        while (!elements.isEmpty()) {
+            TypeElement anInterface = elements.poll();
+            allMethods.addAll(getInterfaceMethods(anInterface));
+
+            for (TypeMirror interfaceMirror : anInterface.getInterfaces()) {
+                elements.add((TypeElement) typeUtils.asElement(interfaceMirror));
+            }
+        }
+        return allMethods;
+    }
+
+    private List<ExecutableElement> getInterfaceMethods(TypeElement anInterface) {
+        List<ExecutableElement> methods = new ArrayList<>();
+
+        for (Element element : anInterface.getEnclosedElements()) {
+
+            if (element.getKind() == ElementKind.METHOD) {
+                methods.add((ExecutableElement) element);
+            }
+        }
+        return methods;
     }
 }

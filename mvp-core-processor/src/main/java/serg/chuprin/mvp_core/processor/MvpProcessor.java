@@ -20,6 +20,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
@@ -34,6 +35,7 @@ public class MvpProcessor extends AbstractProcessor {
     private static Messager messager;
     private static Types typeUtils;
     private Filer filer;
+    private Elements elemUtils;
 
     static void error(Element element, String message, Object... args) {
         message(Diagnostic.Kind.ERROR, element, message, args);
@@ -56,11 +58,13 @@ public class MvpProcessor extends AbstractProcessor {
         typeUtils = processingEnv.getTypeUtils();
         messager = processingEnv.getMessager();
         filer = processingEnv.getFiler();
+        elemUtils = processingEnv.getElementUtils();
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
         List<Pair<TypeElement, String>> presenterViewParis = new ArrayList<>();
+        List<String> generatedViewStates = new ArrayList<>();
 
         for (Element annotatedElem : roundEnv.getElementsAnnotatedWith(InjectViewState.class)) {
 
@@ -77,13 +81,21 @@ public class MvpProcessor extends AbstractProcessor {
                 return true;
             }
 
-            String viewStateClassName = new ViewStateGenerator(
+            ViewStateGenerator generator = new ViewStateGenerator(
                     getViewType(presenterType),
                     filer,
-                    typeUtils).generate();
-            if (viewStateClassName.isEmpty()) {
-                error(annotatedElem, "Failed to generate viewState");
-                return true;
+                    typeUtils,
+                    elemUtils);
+
+            String viewStateClassName = generator.getClassName();
+
+            if (!generatedViewStates.contains(viewStateClassName)) {
+                if (!generator.generate()) {
+                    error(annotatedElem, "Failed to generate viewState: " + viewStateClassName);
+                    return true;
+                }
+
+                generatedViewStates.add(viewStateClassName);
             }
             presenterViewParis.add(new Pair<>(presenterType, viewStateClassName));
         }
@@ -168,12 +180,11 @@ public class MvpProcessor extends AbstractProcessor {
     private TypeElement getViewFromPresenterSuperclassTypeArg(TypeElement presenter) {
         DeclaredType superclass = (DeclaredType) presenter.getSuperclass();
 
-        List<? extends TypeMirror> typeArguments = superclass.getTypeArguments();
-        for (TypeMirror arg : typeArguments) {
+        for (TypeMirror arg : superclass.getTypeArguments()) {
 
             Element possibleView = typeUtils.asElement(arg);
             if (possibleView != null && possibleView instanceof TypeElement
-                    && Utils.isImplementingInterface((TypeElement) possibleView, MvpView.class)) {
+                    && Utils.isImplementingInterface(elemUtils, typeUtils, (TypeElement) possibleView, MvpView.class)) {
                 return (TypeElement) possibleView;
             }
         }
