@@ -69,9 +69,12 @@ class ViewStateGenerator {
     boolean generate() {
         String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
         List<ExecutableElement> allMethods = getAllMethods();
+        List<TypeVariableName> typeVariables = getInterfaceTypeVariables(viewElement);
+
         TypeSpec stateClass = TypeSpec.classBuilder(stateName)
                 .superclass(ParameterizedTypeName.get(ClassName.get(MvpViewState.class), viewInterface))
-                .addSuperinterface(viewInterface)
+                .addSuperinterface(getGenericSuperinterface(typeVariables))
+                .addTypeVariables(typeVariables)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addTypes(createInnerCommandClasses(allMethods))
                 .addMethods(createViewMethods(allMethods))
@@ -94,6 +97,18 @@ class ViewStateGenerator {
         return String.format("%s.%s", packageName, stateName);
     }
 
+    private TypeName getGenericSuperinterface(List<TypeVariableName> typeVariables) {
+        if (typeVariables.isEmpty()) {
+            return viewInterface;
+        }
+        TypeName[] typeNames = new TypeName[typeVariables.size()];
+
+        for (int i = 0; i < typeVariables.size(); i++) {
+            typeNames[i] = typeVariables.get(i).withoutAnnotations();
+        }
+        return ParameterizedTypeName.get(viewInterface, typeNames);
+    }
+
     private Iterable<TypeSpec> createInnerCommandClasses(List<ExecutableElement> allMethods) {
         Class<? extends StateStrategy> viewStrategy = getElemStrategyOrDefault(viewElement, defaultStrategy);
 
@@ -110,7 +125,7 @@ class ViewStateGenerator {
 
         return TypeSpec.classBuilder(getCapitalizedName(method) + COMMAND_SUFFIX)
                 .superclass(ParameterizedTypeName.get(viewCommandName, viewInterface))
-                .addTypeVariables(getTypeVariables(method))
+                .addTypeVariables(getMethodTypeVariables(method))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addFields(createCommandFields(methodParams))
                 .addMethod(createCommandConstructor(method, methodParams, strategy))
@@ -209,7 +224,7 @@ class ViewStateGenerator {
                 .addExceptions(getThrownTypes(method))
                 .varargs(method.isVarArgs())
                 .addParameters(methodParams)
-                .addTypeVariables(getTypeVariables(method))
+                .addTypeVariables(getMethodTypeVariables(method))
                 .returns(ClassName.get(method.getReturnType()))
                 .addCode(code)
                 .build();
@@ -224,10 +239,19 @@ class ViewStateGenerator {
         return exceptions;
     }
 
-    private List<TypeVariableName> getTypeVariables(ExecutableElement method) {
+    private List<TypeVariableName> getMethodTypeVariables(ExecutableElement method) {
         List<TypeVariableName> typeVariableNames = new ArrayList<>();
 
         for (TypeParameterElement typeParam : method.getTypeParameters()) {
+            typeVariableNames.add(TypeVariableName.get(typeParam));
+        }
+        return typeVariableNames;
+    }
+
+    private List<TypeVariableName> getInterfaceTypeVariables(TypeElement element) {
+        List<TypeVariableName> typeVariableNames = new ArrayList<>();
+
+        for (TypeParameterElement typeParam : element.getTypeParameters()) {
             typeVariableNames.add(TypeVariableName.get(typeParam));
         }
         return typeVariableNames;
