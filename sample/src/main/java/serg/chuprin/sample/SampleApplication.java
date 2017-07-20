@@ -3,7 +3,6 @@ package serg.chuprin.sample;
 import android.app.Application;
 
 import serg.chuprin.sample.di.AppComponent;
-import serg.chuprin.sample.di.DaggerAppComponent;
 
 public class SampleApplication extends Application {
 
@@ -12,6 +11,6 @@ public class SampleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        appComponent = DaggerAppComponent.create();
+//        appComponent = DaggerAppComponent.create();
     }
 }

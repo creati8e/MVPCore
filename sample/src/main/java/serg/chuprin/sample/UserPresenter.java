@@ -28,7 +28,7 @@ public class UserPresenter extends BasePresenter<UserView> {
                     .subscribe(new Action1<User>() {
                         @Override
                         public void call(User user) {
-                            getView().showUsername(user.getUsername());
+//                            getView().showUsername(user.getUsername());
                         }
                     }, new Action1<Throwable>() {
                         @Override

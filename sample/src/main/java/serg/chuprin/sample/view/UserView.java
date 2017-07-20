@@ -1,9 +1,7 @@
 package serg.chuprin.sample.view;
 
-import serg.chuprin.mvp_core.view.MvpView;
+import serg.chuprin.sample.model.User;
 
+public interface UserView extends PersonView<User> {
 
-public interface UserView extends MvpView {
-
-    void showUsername(String username);
 }
