@@ -3,6 +3,8 @@ package serg.chuprin.mvp_core.android;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
@@ -11,15 +13,16 @@ import serg.chuprin.mvp_core.PresenterHelper;
 import serg.chuprin.mvp_core.view.MvpView;
 
 
+@SuppressWarnings({"unchecked", "unused"})
 public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         extends AppCompatActivity
         implements MvpView, ComponentHolder {
 
     private final CompositeSubscription compositeSubscription = new CompositeSubscription();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private PresenterHelper<PRESENTER> helper;
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(getLayoutRes());
@@ -49,6 +52,7 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         super.onStop();
         helper.stop(isChangingConfigurations());
         compositeSubscription.clear();
+        compositeDisposable.clear();
     }
 
     @Override
@@ -59,11 +63,15 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
 
     protected abstract int getLayoutRes();
 
-    protected void addSubscription(Subscription subscription) {
+    protected final void addSubscription(Subscription subscription) {
         compositeSubscription.add(subscription);
     }
 
-    protected PRESENTER getPresenter() {
+    protected final void addSubscription(Disposable disposable) {
+        compositeDisposable.add(disposable);
+    }
+
+    protected final PRESENTER getPresenter() {
         return helper.getPresenter();
     }
 

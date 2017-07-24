@@ -2,6 +2,8 @@ package serg.chuprin.mvp_core;
 
 import android.support.annotation.CallSuper;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.view.MvpView;
@@ -12,6 +14,7 @@ import serg.chuprin.mvp_core.viewstate.MvpViewState;
 public abstract class MvpPresenter<VIEW extends MvpView> {
     private final MvpViewState<VIEW> viewState;
     private final CompositeSubscription viewSubscription = new CompositeSubscription();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private VIEW viewStateAsView;
     private NullObjectView<VIEW> nullObjectView;
     private boolean viewAttached;
@@ -72,10 +75,15 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
 
     protected final void unsubscribeAll() {
         viewSubscription.clear();
+        compositeDisposable.clear();
     }
 
     protected final void subscribeView(Subscription subscription) {
         viewSubscription.add(subscription);
+    }
+
+    protected final void subscribeView(Disposable disposable) {
+        compositeDisposable.add(disposable);
     }
 
     protected boolean isFirstAttach() {
