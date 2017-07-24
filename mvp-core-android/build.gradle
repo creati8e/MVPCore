@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply from: 'install.gradle'
+apply from: 'bintray.gradle'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -7,7 +9,7 @@ dependencies {
 
     //rx
     compileOnly 'io.reactivex:rxjava:1.2.6'
-    compileOnly 'io.reactivex:rxandroid:1.2.1'
+    compileOnly 'io.reactivex.rxjava2:rxjava:2.1.1'
 
     compileOnly project(':stub-android')
 }

@@ -1,7 +1,8 @@
 package serg.chuprin.sample.view;
 
 import android.os.Bundle;
-import android.widget.TextView;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -11,6 +12,7 @@ import serg.chuprin.sample.SampleApplication;
 import serg.chuprin.sample.UserPresenter;
 import serg.chuprin.sample.di.UserComponent;
 import serg.chuprin.sample.di.UserModule;
+import serg.chuprin.sample.model.User;
 
 public class UserActivity extends MvpActivity<UserPresenter> implements UserView {
 
@@ -38,7 +40,7 @@ public class UserActivity extends MvpActivity<UserPresenter> implements UserView
     }
 
     @Override
-    public void showUsername(String username) {
-        ((TextView) findViewById(R.id.text)).setText(username);
+    public void showUsers(List<? extends User> users) {
+
     }
 }
