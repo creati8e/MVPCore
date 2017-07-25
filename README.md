@@ -100,7 +100,7 @@ Similarly you can use *addSubscription* method in MvpActivty/MvpFragment. Subscr
 
 # How to
 
-1. As usually, create *AppComponent* and initialize it in Application class
+* As usually, create *AppComponent* and initialize it in Application class
  
 ```kotlin
 @Component(modules = arrayOf(/*your modules*/))
@@ -127,7 +127,7 @@ class YourAppication : Application() {
 }
 ```
 
-2. Create custom scope
+* Create custom scope
 
 ```kotlin
 @Scope
@@ -136,7 +136,7 @@ public @interface PerView {
 }
 ```
 
-3. Create module and subcomponent for your feature.
+* Create module and subcomponent for your feature.
 
 Module:
 
@@ -160,20 +160,20 @@ interface UserComponent {
 }
 ```
 
-4. Create presenter
+* Create presenter
  
 ```kotlin
 class UserPresenter @Inject constructor(/*your injected dependencies*/): MvpPresenter<UserView> {
 }
 ```
 
-5. Create view interface
+* Create view interface
 
 ```kotlin
 interface UserView: MvpView
 ```
 
-6. Create activity/fragment which implements this interface and overrides **createComponent** and **componentClass** methods
+* Create activity/fragment which implements this interface and overrides **createComponent** and **componentClass** methods
 
 ```kotlin
 class UserActivity : MvpActivity<UserPresenter>(), UserView {
