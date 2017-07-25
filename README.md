@@ -152,17 +152,18 @@ interface UserComponent {
 }
 ```
 4. Create presenter
-5. 
+ 
 ```kotlin
 class UserPresenter @Inject constructor(/*your injected dependencies*/): MvpPresenter<UserView> {
 }
 ```
 5. Create view interface
-6. 
+
 ```kotlin
 interface UserView: MvpView
 ```
 6. Create activity/fragment which implements this interface and overrides **createComponent** and **componentClass** methods
+
 ```kotlin
 class UserActivity : MvpActivity<UserPresenter>(), UserView {
 
