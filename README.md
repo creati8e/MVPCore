@@ -45,7 +45,7 @@ Library based on dagger's components caching. So all dependencies (presenters) a
 You no need to manually inject, library do it automatically. This done via reflection.
 
 ## ViewState
-Do you know with a case when response comes from a server, but view in the background and this response is lost?
+Do you faced with a case when response comes from a server, but view in the background and this response is lost?
 No more! MvpCore using command's queue so if event come when view is not visible to user, this event will be placed 
 in queue and executed after view became visible to user.
 
