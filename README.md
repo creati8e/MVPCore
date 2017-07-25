@@ -117,6 +117,7 @@ class YourAppication : Application() {
 ```
 
 2. Create custom scope
+
 ```kotlin
 @Scope
 @Retention(RetentionPolicy.RUNTIME)
