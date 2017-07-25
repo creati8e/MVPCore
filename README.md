@@ -18,7 +18,6 @@ Add dependencies to your app's *build.gradle*
 ```groovy
 dependencies {
     ...
-    def mvpVer = ''
 
     compile 'serg.chuprin:mvp-core:1.0.1'
     compile 'serg.chuprin:mvp-core-android:1.0.1'
@@ -84,9 +83,16 @@ interface UserView : MvpView {
     override fun <V : MvpView?> afterExecute(currentCommands: Queue<ViewCommand<V>>?, command: ViewCommand<V>?) = Unit
 }
 ```
+
+## Lifecycle
+View attached in *onStart* method and detached in *onStop* method.
+
 ## RxJava support
 
 You can use RxJava 1 or 2. 
+Use *subscribeView* method in presenter. Subscription list will be cleared when view detached.
+
+Similarly you can use *addSubscription* method in MvpActivty/MvpFragment. Subscription list will be cleared in *onStop*.
 
 # How to
 
@@ -146,11 +152,13 @@ interface UserComponent {
 }
 ```
 4. Create presenter
+5. 
 ```kotlin
 class UserPresenter @Inject constructor(/*your injected dependencies*/): MvpPresenter<UserView> {
 }
 ```
 5. Create view interface
+6. 
 ```kotlin
 interface UserView: MvpView
 ```
