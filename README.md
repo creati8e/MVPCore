@@ -41,7 +41,7 @@ android {
 }
 ```
 # How it works
-App based on dagger's components caching. So all dependencies (presenters) are retained across configuration change.
+Library based on dagger's components caching. So all dependencies (presenters) are retained across configuration change.
 You no need to manually inject, library do it automatically. This done via reflection.
 
 ## ViewState
@@ -54,12 +54,16 @@ If you do not want, don't do it. In this case you no need to check view for null
 
 Similarly to **Moxy** (https://github.com/Arello-Mobile/Moxy) there are different strategies to manage view commands.
 * AddToEndSingleOneExecutionStrategy (by default)
+* 
   Command will be added in queue once (queue might contains only one such command) and removed after execution
 * AddToEndSingleStrategy 
+* 
   Command will be added in queue once (queue might contains only one such command)
 * SingleStateStrategy 
-  Queue will be cleared when command added, so only one command will be present in queue
+* 
+  Queue will be cleared before command added, so only one command will be present in queue
 * SkipStrategy 
+* 
   Command will not be added in queue
  
  Yoy can annotate the whole view interface with specific strategy or annotate concrete methods.
