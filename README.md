@@ -5,7 +5,7 @@ MvpCore is a tiny library to setup Mvp pattern in your app, based on Dagger 2 an
 
 Latest version is **1.0.1**
 
-Firstly add repository to your project's *build.gradle* 
+First add repository to your project's *build.gradle* 
 ```groovy
 allprojects {
     repositories {
@@ -41,32 +41,32 @@ android {
 }
 ```
 # How it works
-Library based on dagger's components caching. So all dependencies (presenters) are retained across configuration change.
-You no need to manually inject, library do it automatically. This done via reflection.
+Library is based on dagger's components caching. So all dependencies (presenters) are retained across configuration change.
+You don't need to manually inject library, it is done automatically via reflection.
 
 ## ViewState
-Do you faced with a case when response comes from a server, but view in the background and this response is lost?
-No more! MvpCore using command's queue so if event come when view is not visible to user, this event will be placed 
-in queue and executed after view became visible to user.
+Have you faced with a case when response comes from a server, but view is in the background and the response is lost?
+No more! MvpCore uses command's queue so if event comes when view is not visible to user, the event will be placed 
+in queue and executed after view becomes visible to user.
 
 To use it, add **InjectViewState** annotation to your presenter.
-If you do not want, don't do it. In this case you no need to check view for null, because MvpCore uses NullObject pattern;
+If you don't want it, don't do it. In this case you no need to check view for null, because MvpCore uses NullObject pattern;
 
 Similarly to **Moxy** (https://github.com/Arello-Mobile/Moxy) there are different strategies to manage view commands.
 * AddToEndSingleOneExecutionStrategy (by default)
 * 
-  Command will be added in queue once (queue might contains only one such command) and removed after execution
+  Command will be added in queue once (queue might contain only one command) and removed after execution
 * AddToEndSingleStrategy 
 * 
-  Command will be added in queue once (queue might contains only one such command)
+  Command will be added in queue once (queue might contain only one command)
 * SingleStateStrategy 
 * 
-  Queue will be cleared before command added, so only one command will be present in queue
+  Queue will be cleared before command is added, so only one command will be present in queue
 * SkipStrategy 
 * 
   Command will not be added in queue
  
- Yoy can annotate the whole view interface with specific strategy or annotate concrete methods.
+ You can annotate the whole view interface with specific strategy or annotate concrete methods.
   ```kotlin
 @StateStrategyType(value = SingleStateStrategy::class)
 interface UserView : MvpView {
@@ -77,7 +77,7 @@ interface UserView : MvpView {
     fun showRepositories(repositories: List<GithubRepositoryEntity>)
 }
  ```
- And of course, feel free to add your own strategies. You need to extends from **StateStrategy**.
+ And of course, feel free to add your own strategies. You need to extend **StateStrategy**.
  
  ```kotlin
  class CustomStrategy : StateStrategy {
@@ -89,18 +89,18 @@ interface UserView : MvpView {
 ```
 
 ## Lifecycle
-View attached in *onStart* method and detached in *onStop* method.
+View is attached in *onStart* method and detached in *onStop* method.
 
 ## RxJava support
 
 You can use RxJava 1 or 2. 
-Use *subscribeView* method in presenter. Subscription list will be cleared when view detached.
+Use *subscribeView* method in presenter. Subscription list will be cleared when view is detached.
 
 Similarly you can use *addSubscription* method in MvpActivty/MvpFragment. Subscription list will be cleared in *onStop*.
 
 # How to
 
-* As usually, create *AppComponent* and initialize it in Application class
+* Create *AppComponent* and initialize it in Application class
  
 ```kotlin
 @Component(modules = arrayOf(/*your modules*/))
