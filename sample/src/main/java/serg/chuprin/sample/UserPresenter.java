@@ -9,7 +9,7 @@ import serg.chuprin.sample.model.User;
 import serg.chuprin.sample.model.UserInteractor;
 import serg.chuprin.sample.view.UserView;
 
-@InjectViewState()
+@InjectViewState
 public class UserPresenter extends BasePresenter<UserView> {
 
     private final UserInteractor interactor;
