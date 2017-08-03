@@ -57,11 +57,13 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
         }
         viewAttached = false;
         unsubscribeAll();
+        onViewDetached();
     }
 
     final void destroyView() {
         if (viewState != null) {
             viewState.destroyView();
+            onViewDestroyed();
         }
     }
 
@@ -86,7 +88,23 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
         compositeDisposable.add(disposable);
     }
 
+    protected final void removeSubscription(Disposable disposable) {
+        compositeDisposable.delete(disposable);
+    }
+
+    protected final void removeSubscription(Subscription subscription) {
+        viewSubscription.remove(subscription);
+    }
+
     protected boolean isFirstAttach() {
         return isFirstAttach;
+    }
+
+    protected void onViewDetached() {
+
+    }
+
+    protected void onViewDestroyed() {
+
     }
 }
