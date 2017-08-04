@@ -1,8 +1,11 @@
 package serg.chuprin.sample.view;
 
 import android.os.Bundle;
+import android.util.Pair;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 
@@ -40,7 +43,12 @@ public class UserActivity extends MvpActivity<UserPresenter> implements UserView
     }
 
     @Override
-    public void showUsers(List<? extends User> users) {
+    public void showUsers(User models) {
+
+    }
+
+    @Override
+    public void showProgress(Set<List<User>> progress, Pair<List<User>, Future<User>> g) {
 
     }
 }

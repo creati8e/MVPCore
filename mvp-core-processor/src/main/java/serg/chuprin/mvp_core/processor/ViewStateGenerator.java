@@ -17,8 +17,9 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import serg.chuprin.mvp_core.annotations.StateStrategyType;
@@ -55,16 +55,14 @@ class ViewStateGenerator {
     private static final String VIEW_PARAM = "view";
     private final Filer filer;
     private final Types typeUtils;
-    private final Elements elemUtils;
     private final TypeElement viewElement;
     private final ClassName viewInterface;
     private final ClassName viewCommandName;
     private final Class<? extends StateStrategy> defaultStrategy;
 
-    ViewStateGenerator(TypeElement viewElem, Filer filer, Types typeUtils, Elements elemUtils) {
+    ViewStateGenerator(TypeElement viewElem, Filer filer, Types typeUtils) {
         this.filer = filer;
         this.typeUtils = typeUtils;
-        this.elemUtils = elemUtils;
 
         viewElement = viewElem;
         viewInterface = ClassName.get(viewElement);
@@ -288,51 +286,6 @@ class ViewStateGenerator {
         return params;
     }
 
-    private TypeName inferTypeName(TypeMirror mirror, Map<String, String> typesMap) {
-
-        String typeStr = mirror.toString();
-
-        List<Pair<Integer, String>> indexes = new ArrayList<>();
-
-        // entry example: (key) V -> (value) List<Long>
-        for (Map.Entry<String, String> entry : typesMap.entrySet()) {
-
-            if (typeStr.equals(entry.getKey())) {
-                return TypeName.get(entry.getValue());
-            }
-
-            int replacementIndex = -1;
-            char genericArg = entry.getKey().charAt(0);
-
-            for (int i = 1; i < typeStr.length() - 1; ++i) {
-                if (typeStr.charAt(i) == genericArg
-                        && !isAlphabetic(typeStr.charAt(i - 1))
-                        && !isAlphabetic(typeStr.charAt(i + 1))) {
-
-                    replacementIndex = i;
-                    break;
-                }
-            }
-            if (replacementIndex > -1) {
-                indexes.add(new Pair<>(replacementIndex, entry.getValue()));
-            }
-        }
-
-        if (!indexes.isEmpty()) {
-            StringBuilder builder = new StringBuilder(typeStr);
-
-            int offset = 0;
-            for (Pair<Integer, String> index : indexes) {
-                int actualIndex = offset + index.getFirst();
-                builder.replace(actualIndex, actualIndex + 1, index.getSecond());
-                offset += index.getSecond().length() - 1;
-            }
-
-            return TypeName.get(builder.toString());
-        }
-        return TypeName.get(mirror);
-    }
-
     private List<AnnotationSpec> getMethodParamAnnotations(VariableElement parameter) {
         List<AnnotationSpec> annotations = new ArrayList<>();
 
@@ -365,7 +318,7 @@ class ViewStateGenerator {
      * non-recursive getting methods from all super interfaces
      */
     private List<InterfaceMethods> getAllMethods() {
-        Map<TypeMirror, InterfaceMethods> methodsMap = new HashMap<>();
+        Map<TypeMirror, InterfaceMethods> methodsMap = new LinkedHashMap<>();
 
         Deque<TypeMirror> elements = new ArrayDeque<>(Collections.singletonList(viewElement.asType()));
 
@@ -417,7 +370,7 @@ class ViewStateGenerator {
         TypeElement element = (TypeElement) declaredType.asElement();
         List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
 
-        Map<String, String> typesMapping = new HashMap<>(typeArguments.size());
+        Map<String, String> typesMapping = new LinkedHashMap<>(typeArguments.size());
         for (int i = 0; i < typeArguments.size(); i++) {
             typesMapping.put(typeParameters.get(i).toString(), typeArguments.get(i).toString());
         }
@@ -426,7 +379,7 @@ class ViewStateGenerator {
 
     /**
      * @param currentMapping current interface mapping.
-     *                       Contains generic generic types and args. I.e S -> P
+     *                       Contains generic types and args. I.e S -> P
      * @param parentMapping  Parent interface mapping.
      *                       Contains resolved args. I.e P -> String
      * @return current mapping without unresolved args.
@@ -436,47 +389,114 @@ class ViewStateGenerator {
                                                          Map<String, String> parentMapping) {
 
 
+        Map<String, String> argsToAdd = new LinkedHashMap<>();
+
         for (Map.Entry<String, String> entry : currentMapping.entrySet()) {
-            String arg = parentMapping.get(entry.getValue());
-            if (arg != null) {
-                currentMapping.put(entry.getKey(), arg);
-            } else {
-                String genericMapping = entry.getValue();
 
-                List<Pair<Integer, String>> indexes = new ArrayList<>();
-                for (Map.Entry<String, String> parentArg : parentMapping.entrySet()) {
+            String parentArg = parentMapping.get(entry.getValue());
+            if (parentArg != null) {
+                argsToAdd.put(entry.getKey(), parentArg);
+                continue;
+            }
+            String genericMapping = entry.getValue();
 
-                    int replacementIndex = -1;
-                    char genericArg = parentArg.getKey().charAt(0);
+            List<ReplacementBundle> replacementBundles = new ArrayList<>();
 
-                    for (int i = 1; i < genericMapping.length() - 1; ++i) {
-                        if (genericMapping.charAt(i) == genericArg
-                                && !isAlphabetic(genericMapping.charAt(i - 1))
-                                && !isAlphabetic(genericMapping.charAt(i + 1))) {
+            for (Map.Entry<String, String> arg : parentMapping.entrySet()) {
+                replacementBundles.addAll(findGenericTypes(genericMapping, arg.getKey(), arg.getValue()));
+            }
+            if (!replacementBundles.isEmpty()) {
+                String inferredGeneric = replaceGenericWithArgs(genericMapping, replacementBundles);
+                argsToAdd.put(genericMapping, inferredGeneric);
+                argsToAdd.put(entry.getKey(), inferredGeneric);
+            }
+        }
+        currentMapping.putAll(argsToAdd);
+        return currentMapping;
+    }
 
-                            replacementIndex = i;
-                            break;
-                        }
-                    }
-                    if (replacementIndex > -1) {
-                        indexes.add(new Pair<>(replacementIndex, parentArg.getValue()));
-                    }
+    /**
+     * @param mirror   toString() gives: android.util.Pair<MODEL,API>
+     * @param typesMap map with types and their arguments. For example: MODEL -> java.lang.Boolean
+     * @return TypeName which represents type with resolved generic types.
+     * typesMap: MODEL -> java.lang.Boolean, API -> serg.chuprin.sample.model.User
+     * Input: android.util.Pair<MODEL,API>
+     * Output: android.util.Pair<java.lang.Boolean,serg.chuprin.sample.model.User>
+     */
+    private TypeName inferTypeName(TypeMirror mirror, Map<String, String> typesMap) {
+
+        String typeStr = mirror.toString();
+
+        List<ReplacementBundle> replacementBundles = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : typesMap.entrySet()) {
+
+            if (typeStr.equals(entry.getKey())) {
+                return TypeName.get(entry.getValue());
+            }
+            replacementBundles.addAll(findGenericTypes(typeStr, entry.getKey(), entry.getValue()));
+        }
+        if (!replacementBundles.isEmpty()) {
+            return TypeName.get(replaceGenericWithArgs(typeStr, replacementBundles));
+        }
+        return TypeName.get(mirror);
+    }
+
+    /**
+     * @param typeStr string which represents the type: android.util.Pair<MODEL,T>
+     * @param arg     generic type: MODEL
+     * @param value   generic type argument to replace: java.lang.Boolean
+     */
+    private List<ReplacementBundle> findGenericTypes(String typeStr, String arg, String value) {
+        List<ReplacementBundle> bundles = new LinkedList<>();
+
+        if (arg.length() == 1) {
+
+            char genericArg = arg.charAt(0);
+
+            for (int i = 1; i < typeStr.length() - 1; ++i) {
+                if (typeStr.charAt(i) == genericArg && isGenericType(typeStr, i, i) && i > -1) {
+                    bundles.add(new ReplacementBundle(i, String.valueOf(genericArg), value));
                 }
-                if (!indexes.isEmpty()) {
-                    StringBuilder builder = new StringBuilder(genericMapping);
+            }
+        } else {
+            int lastIndex = 0;
 
-                    for (Pair<Integer, String> index : indexes) {
-                        builder.replace(index.getFirst(), index.getFirst() + 1, index.getSecond());
-                    }
-                    currentMapping.remove(entry.getKey());
+            while (lastIndex != -1) {
+                int startIndex = typeStr.indexOf(arg, lastIndex);
 
-                    String inferredGeneric = builder.toString();
-                    currentMapping.put(genericMapping, inferredGeneric);
-                    currentMapping.put(entry.getKey(), inferredGeneric);
+                if (startIndex == -1) {
+                    break;
+                }
+                lastIndex = startIndex + arg.length() - 1;
+
+                if (startIndex > 0 && lastIndex < typeStr.length()
+                        && isGenericType(typeStr, startIndex, lastIndex)) {
+                    bundles.add(new ReplacementBundle(startIndex, String.valueOf(arg), value));
                 }
             }
         }
-        return currentMapping;
+        return bundles;
+    }
+
+    private boolean isGenericType(String typeStr, int startIndex, int lastIndex) {
+        return !isAlphabetic(typeStr.charAt(startIndex - 1))
+                && !isAlphabetic(typeStr.charAt(lastIndex + 1));
+    }
+
+    private String replaceGenericWithArgs(String typeStr, List<ReplacementBundle> replacementBundles) {
+        StringBuilder builder = new StringBuilder(typeStr);
+
+        int offset = 0;
+        for (ReplacementBundle bundle : replacementBundles) {
+            int startIndex = offset + bundle.getStartIndex();
+
+            int typeLength = bundle.getGenericType().length();
+
+            builder.replace(startIndex, startIndex + typeLength, bundle.getGenericTypeArg());
+            offset = bundle.getGenericTypeArg().length() - typeLength;
+        }
+        return builder.toString();
     }
 
     private List<ExecutableElement> getInterfaceMethods(TypeElement anInterface) {

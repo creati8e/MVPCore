@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.lang.model.element.ExecutableElement;
 
-public class InterfaceMethods {
+class InterfaceMethods {
 
     private final List<ExecutableElement> methods;
 
@@ -14,16 +14,16 @@ public class InterfaceMethods {
      */
     private final Map<String, String> genericTypesMap;
 
-    public InterfaceMethods(List<ExecutableElement> methods, Map<String, String> genericTypesMap) {
+    InterfaceMethods(List<ExecutableElement> methods, Map<String, String> genericTypesMap) {
         this.methods = methods;
         this.genericTypesMap = genericTypesMap;
     }
 
-    public Map<String, String> getTypesMap() {
+    Map<String, String> getTypesMap() {
         return genericTypesMap;
     }
 
-    public List<ExecutableElement> getMethods() {
+    List<ExecutableElement> getMethods() {
         return methods;
     }
 }
