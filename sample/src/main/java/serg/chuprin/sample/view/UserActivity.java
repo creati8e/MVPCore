@@ -48,7 +48,17 @@ public class UserActivity extends MvpActivity<UserPresenter> implements UserView
     }
 
     @Override
+    public void showUsers(List<User> listPu) {
+
+    }
+
+    @Override
     public void showProgress(Set<List<User>> progress, Pair<List<User>, Future<User>> g) {
+
+    }
+
+    @Override
+    public void showUsers(UserComponent users) {
 
     }
 }

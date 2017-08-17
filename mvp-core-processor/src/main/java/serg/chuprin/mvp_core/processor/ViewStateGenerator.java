@@ -15,8 +15,10 @@ import com.squareup.javapoet.TypeVariableName;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -120,34 +122,35 @@ class ViewStateGenerator {
 
         for (InterfaceMethods interfaceMethods : allMethods) {
 
-            for (ExecutableElement method : interfaceMethods.getMethods()) {
+            for (Method method : interfaceMethods.getMethods()) {
                 classes.add(createCommandClass(method,
-                        getElemStrategyOrDefault(method, viewStrategy),
+                        getElemStrategyOrDefault(method.getExecutableElement(), viewStrategy),
                         interfaceMethods.getTypesMap()));
             }
         }
         return classes;
     }
 
-    private TypeSpec createCommandClass(ExecutableElement method,
+    private TypeSpec createCommandClass(Method method,
                                         Class<? extends StateStrategy> strategy,
                                         Map<String, String> typesMap) {
 
-        Iterable<ParameterSpec> methodParams = getMethodParams(method, typesMap);
+        ExecutableElement executableElement = method.getExecutableElement();
+        Iterable<ParameterSpec> methodParams = getMethodParams(executableElement, typesMap);
 
-        return TypeSpec.classBuilder(getCapitalizedName(method) + COMMAND_SUFFIX)
+        return TypeSpec.classBuilder(getCommandName(method))
                 .superclass(ParameterizedTypeName.get(viewCommandName, viewInterface))
-                .addTypeVariables(getMethodTypeVariables(method, typesMap))
+                .addTypeVariables(getMethodTypeVariables(executableElement, typesMap))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addFields(createCommandFields(methodParams))
-                .addMethod(createCommandConstructor(method, methodParams, strategy))
-                .addMethod(createExecuteMethod(method, methodParams))
+                .addMethod(createCommandConstructor(executableElement, methodParams, strategy))
+                .addMethod(createExecuteMethod(executableElement, methodParams))
                 .build();
     }
 
-    private String getCapitalizedName(ExecutableElement method) {
-        String simpleName = method.getSimpleName().toString();
-        return simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1);
+    private String getCommandName(Method method) {
+        String name = method.getUniqueName();
+        return name.substring(0, 1).toUpperCase() + name.substring(1) + COMMAND_SUFFIX;
     }
 
     private Iterable<FieldSpec> createCommandFields(Iterable<ParameterSpec> methodParams) {
@@ -208,31 +211,31 @@ class ViewStateGenerator {
 
         for (InterfaceMethods interfaceMethods : allMethods) {
 
-            for (ExecutableElement method : interfaceMethods.getMethods()) {
+            for (Method method : interfaceMethods.getMethods()) {
                 methods.add(createViewMethod(method, interfaceMethods.getTypesMap()));
             }
         }
         return methods;
     }
 
-    private MethodSpec createViewMethod(ExecutableElement method, Map<String, String> typesMap) {
-        Iterable<ParameterSpec> methodParams = getMethodParams(method, typesMap);
-        String commandClassName = getCapitalizedName(method) + COMMAND_SUFFIX;
+    private MethodSpec createViewMethod(Method method, Map<String, String> typesMap) {
+        ExecutableElement executableElement = method.getExecutableElement();
+        Iterable<ParameterSpec> methodParams = getMethodParams(executableElement, typesMap);
 
         CodeBlock code = CodeBlock.builder()
-                .addStatement("$N(new " + commandClassName + "($N))",
+                .addStatement("$N(new " + getCommandName(method) + "($N))",
                         EXECUTE_COMMAND_METHOD,
                         getMethodParamsForCaller(methodParams).toString())
                 .build();
 
-        return MethodSpec.methodBuilder(method.getSimpleName().toString())
+        return MethodSpec.methodBuilder(executableElement.getSimpleName().toString())
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addExceptions(getThrownTypes(method))
-                .varargs(method.isVarArgs())
+                .addExceptions(getThrownTypes(executableElement))
+                .varargs(executableElement.isVarArgs())
                 .addParameters(methodParams)
-                .addTypeVariables(getMethodTypeVariables(method, typesMap))
-                .returns(ClassName.get(method.getReturnType()))
+                .addTypeVariables(getMethodTypeVariables(executableElement, typesMap))
+                .returns(ClassName.get(executableElement.getReturnType()))
                 .addCode(code)
                 .build();
     }
@@ -338,11 +341,27 @@ class ViewStateGenerator {
             }
             previousInterface = anInterface;
         }
-        List<InterfaceMethods> methods = new ArrayList<>(methodsMap.size());
-        for (Map.Entry<TypeMirror, InterfaceMethods> entry : methodsMap.entrySet()) {
-            methods.add(entry.getValue());
+
+        Collection<InterfaceMethods> values = methodsMap.values();
+        Map<String, Integer> methodsCounter = new HashMap<>(values.size());
+
+        for (InterfaceMethods methods : values) {
+
+            for (Method method : methods.getMethods()) {
+
+                String methodName = method.getExecutableElement().getSimpleName().toString();
+
+                Integer counter = methodsCounter.get(methodName);
+                if (counter == null) {
+                    counter = 0;
+                } else {
+                    ++counter;
+                    method.setUniqueName(method.getUniqueName() + counter);
+                }
+                methodsCounter.put(methodName, counter);
+            }
         }
-        return methods;
+        return new ArrayList<>(values);
     }
 
     private Map<String, String> createInterfaceTypeArgsMapping(Map<TypeMirror, InterfaceMethods> methodsMap,
@@ -499,8 +518,8 @@ class ViewStateGenerator {
         return builder.toString();
     }
 
-    private List<ExecutableElement> getInterfaceMethods(TypeElement anInterface) {
-        List<ExecutableElement> methods = new ArrayList<>();
+    private List<Method> getInterfaceMethods(TypeElement anInterface) {
+        List<Method> methods = new ArrayList<>();
 
         for (Element element : anInterface.getEnclosedElements()) {
 
@@ -508,7 +527,7 @@ class ViewStateGenerator {
 
                 ExecutableElement method = (ExecutableElement) element;
                 if (method.getReturnType().getKind() == TypeKind.VOID) {
-                    methods.add(method);
+                    methods.add(new Method(method, method.getSimpleName().toString()));
                 } else {
                     MvpProcessor.error(method, "In canonical MVP all view methods should be 'void': ",
                             method.getSimpleName().toString());
