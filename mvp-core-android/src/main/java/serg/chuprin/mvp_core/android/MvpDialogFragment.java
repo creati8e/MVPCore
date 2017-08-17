@@ -3,10 +3,6 @@ package serg.chuprin.mvp_core.android;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import rx.Subscription;
-import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
 import serg.chuprin.mvp_core.MvpDelegate;
 import serg.chuprin.mvp_core.MvpPresenter;
@@ -17,8 +13,6 @@ import serg.chuprin.mvp_core.view.MvpView;
 public abstract class MvpDialogFragment<PRESENTER extends MvpPresenter> extends DialogFragment
         implements MvpView, ComponentHolder {
 
-    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private MvpDelegate<PRESENTER> mvpDelegate;
 
     @Override
@@ -49,8 +43,6 @@ public abstract class MvpDialogFragment<PRESENTER extends MvpPresenter> extends 
     public void onStop() {
         super.onStop();
         mvpDelegate.stop(getActivity().isChangingConfigurations());
-        compositeSubscription.clear();
-        compositeDisposable.clear();
     }
 
     @Override
@@ -61,14 +53,6 @@ public abstract class MvpDialogFragment<PRESENTER extends MvpPresenter> extends 
 
     protected MvpDelegate<PRESENTER> getMvpDelegate() {
         return mvpDelegate;
-    }
-
-    protected final void addSubscription(Subscription subscription) {
-        compositeSubscription.add(subscription);
-    }
-
-    protected final void addSubscription(Disposable disposable) {
-        compositeDisposable.add(disposable);
     }
 
     protected final PRESENTER getPresenter() {

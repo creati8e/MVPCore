@@ -3,10 +3,6 @@ package serg.chuprin.mvp_core.android;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import rx.Subscription;
-import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
 import serg.chuprin.mvp_core.MvpDelegate;
 import serg.chuprin.mvp_core.MvpPresenter;
@@ -18,8 +14,6 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         extends AppCompatActivity
         implements MvpView, ComponentHolder {
 
-    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private MvpDelegate<PRESENTER> mvpDelegate;
 
     @Override
@@ -51,8 +45,6 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     protected void onStop() {
         super.onStop();
         mvpDelegate.stop(isChangingConfigurations());
-        compositeSubscription.clear();
-        compositeDisposable.clear();
     }
 
     @Override
@@ -66,14 +58,6 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     }
 
     protected abstract int getLayoutRes();
-
-    protected final void addSubscription(Subscription subscription) {
-        compositeSubscription.add(subscription);
-    }
-
-    protected final void addSubscription(Disposable disposable) {
-        compositeDisposable.add(disposable);
-    }
 
     protected final PRESENTER getPresenter() {
         return mvpDelegate.getPresenter();

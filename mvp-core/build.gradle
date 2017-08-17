@@ -6,10 +6,6 @@ apply from: 'bintray.gradle'
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    //rx
-    compile 'io.reactivex:rxjava:1.2.6'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.2'
-
     compileOnly 'com.google.android:android:1.6_r2'
     compileOnly project(':stub-android')
     compileOnly project(':stub-viewstate-provider')
