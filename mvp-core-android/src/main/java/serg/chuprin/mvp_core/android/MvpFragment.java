@@ -11,8 +11,8 @@ import io.reactivex.disposables.Disposable;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
+import serg.chuprin.mvp_core.MvpDelegate;
 import serg.chuprin.mvp_core.MvpPresenter;
-import serg.chuprin.mvp_core.PresenterHelper;
 import serg.chuprin.mvp_core.view.MvpView;
 
 
@@ -22,12 +22,12 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
 
     private final CompositeSubscription compositeSubscription = new CompositeSubscription();
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private PresenterHelper<PRESENTER> helper;
+    private MvpDelegate<PRESENTER> mvpDelegate;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper = new PresenterHelper<>(this, savedInstanceState);
+        mvpDelegate = new MvpDelegate<>(this, savedInstanceState);
     }
 
     @Override
@@ -39,25 +39,25 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     @Override
     public void onStart() {
         super.onStart();
-        helper.attachView();
+        mvpDelegate.attachView();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        helper.resume();
+        mvpDelegate.resume();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        helper.saveState(outState);
+        mvpDelegate.saveState(outState);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        helper.stop(getActivity().isChangingConfigurations());
+        mvpDelegate.stop(getActivity().isChangingConfigurations());
         compositeSubscription.clear();
         compositeDisposable.clear();
     }
@@ -65,7 +65,11 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     @Override
     public void onDestroy() {
         super.onDestroy();
-        helper = null;
+        mvpDelegate = null;
+    }
+
+    protected MvpDelegate<PRESENTER> getMvpDelegate() {
+        return mvpDelegate;
     }
 
     protected abstract int getLayoutRes();
@@ -79,6 +83,6 @@ public abstract class MvpFragment<PRESENTER extends MvpPresenter> extends Fragme
     }
 
     protected final PRESENTER getPresenter() {
-        return helper.getPresenter();
+        return mvpDelegate.getPresenter();
     }
 }

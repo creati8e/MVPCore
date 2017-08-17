@@ -8,8 +8,8 @@ import io.reactivex.disposables.Disposable;
 import rx.Subscription;
 import rx.subscriptions.CompositeSubscription;
 import serg.chuprin.mvp_core.ComponentHolder;
+import serg.chuprin.mvp_core.MvpDelegate;
 import serg.chuprin.mvp_core.MvpPresenter;
-import serg.chuprin.mvp_core.PresenterHelper;
 import serg.chuprin.mvp_core.view.MvpView;
 
 
@@ -20,37 +20,37 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
 
     private final CompositeSubscription compositeSubscription = new CompositeSubscription();
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private PresenterHelper<PRESENTER> helper;
+    private MvpDelegate<PRESENTER> mvpDelegate;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(getLayoutRes());
-        helper = new PresenterHelper<>(this, state);
+        mvpDelegate = new MvpDelegate<>(this, state);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        helper.attachView();
+        mvpDelegate.attachView();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        helper.resume();
+        mvpDelegate.resume();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        helper.saveState(outState);
+        mvpDelegate.saveState(outState);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        helper.stop(isChangingConfigurations());
+        mvpDelegate.stop(isChangingConfigurations());
         compositeSubscription.clear();
         compositeDisposable.clear();
     }
@@ -58,7 +58,11 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        helper = null;
+        mvpDelegate = null;
+    }
+
+    protected MvpDelegate<PRESENTER> getMvpDelegate() {
+        return mvpDelegate;
     }
 
     protected abstract int getLayoutRes();
@@ -72,7 +76,7 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     }
 
     protected final PRESENTER getPresenter() {
-        return helper.getPresenter();
+        return mvpDelegate.getPresenter();
     }
 
 }
