@@ -20,7 +20,7 @@ import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-public class ViewStateProviderGenerator {
+class ViewStateProviderGenerator {
 
     private static final String FACTORY_CLASS_NAME = "MvpViewStateProvider";
     private static final String MAP_FIELD = "viewStatesMap";

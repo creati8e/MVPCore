@@ -35,6 +35,7 @@ import serg.chuprin.mvp_core.view.MvpView;
  * It's assumed that Mvp-core can't be used without dagger, so @Inject annotation always present.
  */
 @AutoService(Processor.class)
+@SuppressWarnings("WeakerAccess")
 @SupportedAnnotationTypes({"serg.chuprin.mvp_core.annotations.InjectViewState", "javax.inject.Inject"})
 public class MvpProcessor extends AbstractProcessor {
 
@@ -48,7 +49,7 @@ public class MvpProcessor extends AbstractProcessor {
         message(Diagnostic.Kind.ERROR, element, message, args);
     }
 
-    static void warning(Element element, String message, Object... args) {
+    private static void warning(Element element, String message, Object... args) {
         message(Diagnostic.Kind.WARNING, element, message, args);
     }
 
@@ -88,11 +89,18 @@ public class MvpProcessor extends AbstractProcessor {
                 return true;
             }
 
+            TypeElement viewType = getViewType(presenterType);
+            if (viewType==null) {
+                error(presenterType,
+                        "Your presenter is typed. Please specify your view in annotation",
+                        presenterType);
+                return true;
+            }
             ViewStateGenerator generator = new ViewStateGenerator(
-                    getViewType(presenterType),
+                    viewType,
                     filer,
-                    typeUtils,
-                    elemUtils);
+                    typeUtils
+            );
 
             String viewStateClassName = generator.getClassName();
 
@@ -165,7 +173,7 @@ public class MvpProcessor extends AbstractProcessor {
     }
 
     /**
-     * @param presenterType
+     * @param presenterType typeElement of presenter
      * @return TypeElement for View : MvpView or null if not found
      */
     private TypeElement getViewFromPresenterTypeParams(TypeElement presenterType) {
@@ -183,7 +191,7 @@ public class MvpProcessor extends AbstractProcessor {
     }
 
     /**
-     * @param presenter
+     * @param presenter typeElement of presenter
      * @return TypeElement for View : MvpView or null if not found
      */
     private TypeElement getViewFromPresenterSuperclassTypeArg(TypeElement presenter) {
