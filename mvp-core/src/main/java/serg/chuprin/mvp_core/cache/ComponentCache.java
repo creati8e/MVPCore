@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ComponentCache {
     private static ComponentCache instance;
     private final String BUNDLE_KEY = "BUNDLE_KEY";
-    private AtomicInteger componentId = new AtomicInteger();
+    private final AtomicInteger componentId = new AtomicInteger();
     /**
      * contains dagger2 components
      */
     @SuppressWarnings({"UseSparseArrays"})
-    private Map<Integer, Object> cache = new HashMap<>();
+    private final Map<Integer, Object> cache = new HashMap<>();
 
     public static ComponentCache getInstance() {
         if (instance == null) {

@@ -29,7 +29,7 @@ public class MvpViewState<V extends MvpView> {
 
     @SuppressWarnings({"unused"})
     protected void executeCommand(ViewCommand<V> command) {
-        beforeExecute(command);
+        command.getStateStrategy().beforeExecute(commands, command);
         if (view == null) {
             return;
         }
@@ -37,17 +37,14 @@ public class MvpViewState<V extends MvpView> {
         afterExecute(command);
     }
 
-    private void beforeExecute(ViewCommand<V> command) {
-        command.getStateStrategy().beforeExecute(commands, command);
+    private void restoreView() {
+        for (ViewCommand<V> command : commands) {
+            command.execute(view);
+            afterExecute(command);
+        }
     }
 
     private void afterExecute(ViewCommand<V> command) {
         command.getStateStrategy().afterExecute(commands, command);
-    }
-
-    private void restoreView() {
-        for (ViewCommand<V> command : commands) {
-            command.execute(view);
-        }
     }
 }

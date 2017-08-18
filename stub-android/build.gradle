@@ -5,5 +5,7 @@ dependencies {
     compileOnly 'com.google.android:android:1.5_r3'
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+//noinspection GroovyUnusedAssignment
+sourceCompatibility = JavaVersion.VERSION_1_7
+//noinspection GroovyUnusedAssignment
+targetCompatibility = JavaVersion.VERSION_1_7

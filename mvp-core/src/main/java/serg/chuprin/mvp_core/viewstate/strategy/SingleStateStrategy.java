@@ -5,7 +5,7 @@ import java.util.Queue;
 import serg.chuprin.mvp_core.view.MvpView;
 import serg.chuprin.mvp_core.viewstate.ViewCommand;
 
-@SuppressWarnings({"unused"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class SingleStateStrategy implements StateStrategy {
 
     @Override
@@ -16,6 +16,5 @@ public class SingleStateStrategy implements StateStrategy {
 
     @Override
     public <V extends MvpView> void afterExecute(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
-
     }
 }

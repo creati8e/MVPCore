@@ -10,7 +10,7 @@ import serg.chuprin.mvp_core.cache.ComponentCache;
 import serg.chuprin.mvp_core.view.MvpView;
 
 @SuppressWarnings("unchecked")
-public class PresenterHelper<PRESENTER extends MvpPresenter> {
+public class MvpDelegate<PRESENTER extends MvpPresenter> {
     private final ComponentCache componentCache = ComponentCache.getInstance();
     private final MvpView view;
     private final Object component;
@@ -18,7 +18,7 @@ public class PresenterHelper<PRESENTER extends MvpPresenter> {
     private final PRESENTER presenter;
     private boolean isRecreating;
 
-    public <V extends MvpView & ComponentHolder> PresenterHelper(V viewHolder, Bundle bundle) {
+    public <V extends MvpView & ComponentHolder> MvpDelegate(V viewHolder, Bundle bundle) {
         view = viewHolder;
         holder = viewHolder;
         component = findCachedComponent(bundle);
