@@ -3,7 +3,7 @@ MvpCore is a tiny library to setup Mvp pattern in your app, based on Dagger 2 an
 
 # Setup
 
-Latest version is **1.0.2**
+Latest version is **1.0.3**
 
 First add repository to your project's *build.gradle* 
 ```groovy
@@ -19,9 +19,9 @@ Add dependencies to your app's *build.gradle*
 dependencies {
     ...
 
-    compile 'serg.chuprin:mvp-core:1.0.2'
-    compile 'serg.chuprin:mvp-core-android:1.0.2'
-    apt 'serg.chuprin:mvp-core-processor:1.0.2'
+    compile 'serg.chuprin:mvp-core:1.0.3'
+    compile 'serg.chuprin:mvp-core-android:1.0.3'
+    apt 'serg.chuprin:mvp-core-processor:1.0.3'
     
     // As far as lib based on Dagger components caching, you should include dagger's dependencies
     compile 'com.google.dagger:dagger:2.10'
@@ -93,10 +93,32 @@ View is attached in *onStart* method and detached in *onStop* method.
 
 ## RxJava support
 
-You can use RxJava 1 or 2. 
-Use *subscribeView* method in presenter. Subscription list will be cleared when view is detached.
+To get RxJava2 advantages, you need add these dependencies:
 
-Similarly you can use *addSubscription* method in MvpActivty/MvpFragment. Subscription list will be cleared in *onStop*.
+```groovy
+android {
+    ...
+   dependencies {
+   
+       compile 'serg.chuprin:mvp-core-rx:1.0.3'
+       compile 'serg.chuprin:mvp-core-android-rx:1.0.3'
+       
+       //in this case you don't need to inlclude default dependencies ("serg.chuprin:mvp-core" and "serg.chuprin:mvp-core-android-rx")
+   }
+}
+```
+
+### Available methods:
+
+RxMvpPresenter and Rx android views (activities and fragments):
+
+* void subscribeView(Disposable disposable) in presenter; void addDisposable(Disposable disposable) in android views
+* void unsubscribeAll()
+* boolean removeDisposable(Disposable disposable)
+* CompositeDisposable getCompositeDisposable()
+
+Subscription list will be cleared when view is detached (for presenter).
+And in *onStop* (for android views).
 
 # How to
 
