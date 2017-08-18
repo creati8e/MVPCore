@@ -2,15 +2,16 @@ package serg.chuprin.sample;
 
 import javax.inject.Inject;
 
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import serg.chuprin.RxMvpPresenter;
 import serg.chuprin.mvp_core.annotations.InjectViewState;
 import serg.chuprin.sample.model.User;
 import serg.chuprin.sample.model.UserInteractor;
 import serg.chuprin.sample.view.UserView;
 
 @InjectViewState
-public class UserPresenter extends BasePresenter<UserView> {
+public class UserPresenter extends RxMvpPresenter<UserView> {
 
     private final UserInteractor interactor;
 
@@ -22,20 +23,18 @@ public class UserPresenter extends BasePresenter<UserView> {
 
     @Override
     protected void onViewAttached() {
-        if (isFirstAttach()) {
-            interactor.getUser()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<User>() {
-                        @Override
-                        public void call(User user) {
-//                            getView().showUsername(user.getUsername());
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            throwable.printStackTrace();
-                        }
-                    });
-        }
+        subscribeView(interactor.getUser()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<User>() {
+                    @Override
+                    public void accept(User user) throws Exception {
+                        getView().showUsername(user.getUsername());
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        throwable.printStackTrace();
+                    }
+                }));
     }
 }

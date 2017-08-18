@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Fragment {
     public void onCreate(Bundle savedInstanceState) {
         throw new RuntimeException("Stub!");

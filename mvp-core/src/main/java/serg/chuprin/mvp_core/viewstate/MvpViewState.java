@@ -34,12 +34,17 @@ public class MvpViewState<V extends MvpView> {
             return;
         }
         command.execute(view);
-        command.getStateStrategy().afterExecute(commands, command);
+        afterExecute(command);
     }
 
     private void restoreView() {
         for (ViewCommand<V> command : commands) {
             command.execute(view);
+            afterExecute(command);
         }
+    }
+
+    private void afterExecute(ViewCommand<V> command) {
+        command.getStateStrategy().afterExecute(commands, command);
     }
 }
