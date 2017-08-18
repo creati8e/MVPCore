@@ -11,6 +11,8 @@ dependencies {
     compileOnly project(':stub-viewstate-provider')
 }
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = JavaVersion.VERSION_1_7
+//noinspection GroovyUnusedAssignment
 targetCompatibility = JavaVersion.VERSION_1_7
 

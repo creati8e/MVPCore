@@ -6,7 +6,7 @@ import serg.chuprin.mvp_core.view.MvpView;
 import serg.chuprin.mvp_core.view.nullView.NullObjectView;
 import serg.chuprin.mvp_core.viewstate.MvpViewState;
 
-@SuppressWarnings({"unchecked", "WeakerAccess", "unused"})
+@SuppressWarnings({"unchecked", "WeakerAccess", "unused", "EmptyMethod"})
 public abstract class MvpPresenter<VIEW extends MvpView> {
     private final MvpViewState<VIEW> viewState;
     private VIEW viewStateAsView;

@@ -1,0 +1,37 @@
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'serg.chuprin' // CREATE A GROUP ID FOR YOUR LIBRARY
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'jar'
+                groupId 'serg.chuprin' // CREATE A GROUP ID FOR YOUR LIBRARY
+                artifactId 'mvp-core-android-rx' // THE NAME OF YOUR MODULE
+
+                name 'MvpCore' // YOUR LIBRARY NAME
+                url 'https://gitlab.com/creati8e/MvpCore' // YOUR SITE
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'creati8e' //YOUR ID
+                        name 'Sergey chuprin' //YOUR NAME
+                        email 'gregamer@gmail.com' //YOUR EMAIL
+                    }
+                }
+                scm {
+                    connection 'https://gitlab.com/creati8e/MvpCore.git' // YOUR GIT REPO
+                    developerConnection 'https://gitlab.com/creati8e/MvpCore.git' // YOUR GIT REPO
+                    url 'https://gitlab.com/creati8e/MvpCore' // YOUR SITE
+                }
+            }
+        }
+    }
+}

@@ -3,6 +3,7 @@ package serg.chuprin.mvp_core;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings({"WeakerAccess", "unused", "MismatchedQueryAndUpdateOfCollection"})
 public class MvpViewStateProvider {
 
     private static final Map<Class<?>, Object> viewStatesMap = new HashMap<>();
