@@ -16,7 +16,7 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
 
     @CallSuper
     protected MvpPresenter() {
-        viewState = (MvpViewState<VIEW>) MvpViewStateProvider.getView(this.getClass());
+        viewState = (MvpViewState<VIEW>) MvpViewStateBinder.getView(this.getClass());
         viewStateAsView = (VIEW) viewState;
 
         if (viewState == null) {

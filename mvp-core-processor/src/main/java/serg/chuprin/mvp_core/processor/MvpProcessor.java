@@ -116,7 +116,7 @@ public class MvpProcessor extends AbstractProcessor {
         }
         if (!providerGenerated) {
 
-            if (!new ViewStateProviderGenerator(filer, presenterViewParis).generate()) {
+            if (!new ViewStateBinderGenerator(filer, presenterViewParis).generate()) {
                 error(null, "Failed to generate MvpViewState provider class");
                 return true;
             }
