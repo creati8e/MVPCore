@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"WeakerAccess", "unused", "MismatchedQueryAndUpdateOfCollection"})
-public class MvpViewStateProvider {
+public class MvpViewStateBinder {
 
     private static final Map<Class<?>, Object> viewStatesMap = new HashMap<>();
 

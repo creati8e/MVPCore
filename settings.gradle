@@ -4,4 +4,4 @@ include ':mvp-core', ':mvp-core-android-rx',
         ':stub-android',
         ':sample',
         ':mvp-core-processor',
-        ':stub-viewstate-provider'
+        ':stub-viewstate-binder'
