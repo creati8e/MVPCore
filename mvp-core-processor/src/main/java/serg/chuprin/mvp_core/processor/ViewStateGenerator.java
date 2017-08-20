@@ -86,7 +86,8 @@ class ViewStateGenerator {
                 .addMethods(createViewMethods(allMethods))
                 .build();
 
-        String packageName = viewElement.getEnclosingElement().getSimpleName().toString();
+
+        String packageName = ClassName.bestGuess(viewElement.toString()).packageName();
 
         try {
             JavaFile.builder(packageName, stateClass).build().writeTo(filer);
@@ -98,9 +99,7 @@ class ViewStateGenerator {
     }
 
     String getClassName() {
-        String stateName = String.format("%s%s", viewElement.getSimpleName(), VIEW_STATE_SUFFIX);
-        String packageName = viewElement.getEnclosingElement().getSimpleName().toString();
-        return String.format("%s.%s", packageName, stateName);
+        return viewElement.toString() + VIEW_STATE_SUFFIX;
     }
 
     private TypeName getGenericSuperinterface(List<TypeVariableName> typeVariables) {
