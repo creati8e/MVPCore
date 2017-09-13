@@ -3,7 +3,7 @@ MvpCore is a tiny library to setup Mvp pattern in your app, based on Dagger 2 an
 
 # Setup
 
-Latest version is **1.0.4**
+Latest version is **1.0.5**
 
 First add repository to your project's *build.gradle* 
 ```groovy
@@ -19,9 +19,9 @@ Add dependencies to your app's *build.gradle*
 dependencies {
     ...
 
-    compile 'serg.chuprin:mvp-core:1.0.4'
-    compile 'serg.chuprin:mvp-core-android:1.0.4'
-    apt 'serg.chuprin:mvp-core-processor:1.0.4'
+    compile 'serg.chuprin:mvp-core:1.0.5'
+    compile 'serg.chuprin:mvp-core-android:1.0.5'
+    apt 'serg.chuprin:mvp-core-processor:1.0.5'
     
     // As far as lib based on Dagger components caching, you should include dagger's dependencies
     compile 'com.google.dagger:dagger:2.10'
@@ -100,8 +100,8 @@ android {
     ...
    dependencies {
    
-       compile 'serg.chuprin:mvp-core-rx:1.0.4'
-       compile 'serg.chuprin:mvp-core-android-rx:1.0.4'
+       compile 'serg.chuprin:mvp-core-rx:1.0.5'
+       compile 'serg.chuprin:mvp-core-android-rx:1.0.5'
        
        //in this case you don't need to inlclude default dependencies ("serg.chuprin:mvp-core" and "serg.chuprin:mvp-core-android-rx")
    }
