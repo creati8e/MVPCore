@@ -41,4 +41,19 @@ public class UserActivity extends MvpActivity<UserPresenter> implements UserView
     public void showUsername(String username) {
         ((TextView) findViewById(R.id.text)).setText(username);
     }
+
+    @Override
+    public void doSomething() {
+
+    }
+
+    @Override
+    public void doElse() {
+
+    }
+
+    @Override
+    public void doMore() {
+
+    }
 }

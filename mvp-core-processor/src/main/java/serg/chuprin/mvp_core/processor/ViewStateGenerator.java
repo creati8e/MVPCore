@@ -115,12 +115,14 @@ class ViewStateGenerator {
     }
 
     private Iterable<TypeSpec> createInnerCommandClasses(List<InterfaceMethods> allMethods) {
-        Class<? extends StateStrategy> viewStrategy = getElemStrategyOrDefault(viewElement, defaultStrategy);
+
 
         List<TypeSpec> classes = new ArrayList<>();
 
         for (InterfaceMethods interfaceMethods : allMethods) {
+            Element element = ((DeclaredType) interfaceMethods.getViewInterface()).asElement();
 
+            Class<? extends StateStrategy> viewStrategy = getElemStrategyOrDefault(element, defaultStrategy);
             for (Method method : interfaceMethods.getMethods()) {
                 classes.add(createCommandClass(method,
                         getElemStrategyOrDefault(method.getExecutableElement(), viewStrategy),
@@ -332,6 +334,7 @@ class ViewStateGenerator {
             TypeElement interfaceType = (TypeElement) typeUtils.asElement(anInterface);
 
             methodsMap.put(anInterface, new InterfaceMethods(
+                    anInterface,
                     getInterfaceMethods(interfaceType),
                     createInterfaceTypeArgsMapping(methodsMap, anInterface, previousInterface)));
 
