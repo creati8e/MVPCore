@@ -9,13 +9,13 @@ import java.lang.reflect.Method;
 import serg.chuprin.mvp_core.cache.ComponentCache;
 import serg.chuprin.mvp_core.view.MvpView;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MvpDelegate<PRESENTER extends MvpPresenter> {
     private final ComponentCache componentCache = ComponentCache.getInstance();
     private final MvpView view;
-    private final Object component;
     private final ComponentHolder holder;
     private final PRESENTER presenter;
+    public Object component;
     private boolean isRecreating;
 
     public <V extends MvpView & ComponentHolder> MvpDelegate(V viewHolder, Bundle bundle) {
@@ -31,6 +31,7 @@ public class MvpDelegate<PRESENTER extends MvpPresenter> {
         if (!isRecreating && !retainComponent) {
             componentCache.delete(component);
             presenter.destroyView();
+            component = null;
         }
     }
 
