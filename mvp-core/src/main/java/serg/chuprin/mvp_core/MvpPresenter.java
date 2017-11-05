@@ -56,8 +56,11 @@ public abstract class MvpPresenter<VIEW extends MvpView> {
     final void destroyView() {
         if (viewState != null) {
             viewState.destroyView();
-            onViewDestroyed();
+        } else if (nullObjectView != null) {
+            nullObjectView.removeView();
+            nullObjectView = null;
         }
+        onViewDestroyed();
     }
 
     protected final VIEW getView() {
