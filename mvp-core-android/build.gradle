@@ -7,12 +7,10 @@ dependencies {
     compile project(':mvp-core')
     compileOnly 'com.google.android:android:4.1.1.4'
 
-    //rx
-    compile 'io.reactivex:rxjava:1.2.6'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.2'
-
     compileOnly project(':stub-android')
 }
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = JavaVersion.VERSION_1_7
+//noinspection GroovyUnusedAssignment
 targetCompatibility = JavaVersion.VERSION_1_7

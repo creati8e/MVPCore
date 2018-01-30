@@ -1,100 +1,61 @@
 package serg.chuprin.mvp_core.processor;
 
-import com.google.common.reflect.TypeToken;
-import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-public class ViewStateProviderGenerator {
+import serg.chuprin.mvp_core.viewstate.MvpViewState;
 
-    private static final String FACTORY_CLASS_NAME = "MvpViewStateProvider";
-    private static final String MAP_FIELD = "viewStatesMap";
-    private static final String GET_VIEW_STATE_METHOD = "getView";
-    private static final String PRESENTER_PARAM = "presenter";
+class ViewStateProviderGenerator {
+    static final String PROVIDE_VIEW_STATE_METHOD = "provideViewState";
+    private static final String VIEW_STATE_PROVIDER_SUFFIX = "Provider";
+    private final Pair<TypeElement, String> pair;
+    private final ClassName className;
+    private final String providerName;
     private final Filer filer;
-    private final List<Pair<TypeElement, String>> presenterViewParis;
 
-    ViewStateProviderGenerator(Filer filer,
-                               List<Pair<TypeElement, String>> presenterViewParis) {
+    ViewStateProviderGenerator(Filer filer, Pair<TypeElement, String> pair) {
+        this.pair = pair;
+        className = ClassName.bestGuess(pair.getSecond());
         this.filer = filer;
-        this.presenterViewParis = presenterViewParis;
+        providerName = className.simpleName() + VIEW_STATE_PROVIDER_SUFFIX;
     }
 
-    boolean generate() {
+    String generate() {
+        TypeSpec providerClass = TypeSpec.classBuilder(providerName)
+                .addModifiers(Modifier.PUBLIC)
+                .addSuperinterface(serg.chuprin.mvp_core.ViewStateProvider.class)
+                .addMethod(MethodSpec.methodBuilder(PROVIDE_VIEW_STATE_METHOD)
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(MvpViewState.class)
+                        .addCode(CodeBlock.builder()
+                                .addStatement("return new $N()", pair.getSecond())
+                                .build())
+                        .build())
+                .build();
+
         try {
-            JavaFile.builder("serg.chuprin.mvp_core", createFactoryClass())
+            JavaFile.builder(className.packageName(), providerClass)
                     .build()
                     .writeTo(filer);
+
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return getProviderName();
         }
-        return true;
+        return getProviderName();
     }
 
-    private TypeSpec createFactoryClass() {
-        ParameterizedTypeName mapType = ParameterizedTypeName.get(Map.class,
-                getClassType(),
-                Object.class);
-
-        return TypeSpec.classBuilder(FACTORY_CLASS_NAME)
-                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
-                        .addMember("value", "{$N}", "\"unchecked\"")
-                        .build())
-                .addField(FieldSpec.builder(mapType,
-                        MAP_FIELD,
-                        Modifier.PRIVATE,
-                        Modifier.FINAL,
-                        Modifier.STATIC)
-                        .build())
-                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
-                .addStaticBlock(createStaticBlock())
-                .addMethod(createGetterMethod())
-                .build();
-    }
-
-    private MethodSpec createGetterMethod() {
-        return MethodSpec.methodBuilder(GET_VIEW_STATE_METHOD)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addParameter(getClassType(), PRESENTER_PARAM)
-                .addCode(CodeBlock.builder()
-                        .addStatement("return $N.get($N)", MAP_FIELD, PRESENTER_PARAM)
-                        .build())
-                .returns(Object.class)
-                .build();
-    }
-
-    private Type getClassType() {
-        return new TypeToken<Class<?>>() {
-        }.getType();
-    }
-
-    private CodeBlock createStaticBlock() {
-
-        CodeBlock.Builder builder = CodeBlock.builder()
-                .addStatement("$N = new $T()", MAP_FIELD, HashMap.class);
-
-        for (Pair<TypeElement, String> pair : presenterViewParis) {
-
-            builder.addStatement("$N.put($N.class,new $N())", MAP_FIELD,
-                    ClassName.get(pair.getFirst()).toString(),
-                    pair.getSecond());
-        }
-        return builder.build();
+    private String getProviderName() {
+        return className.packageName() + "." + providerName;
     }
 }

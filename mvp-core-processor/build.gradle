@@ -16,5 +16,7 @@ jar {
     from configurations.libraries.collect { it.isDirectory() ? it : zipTree(it) }
 }
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = JavaVersion.VERSION_1_7
+//noinspection GroovyUnusedAssignment
 targetCompatibility = JavaVersion.VERSION_1_7

@@ -9,6 +9,6 @@ public class AddToEndSingleOneExecutionStrategy extends AddToEndSingleStrategy i
 
     @Override
     public <V extends MvpView> void afterExecute(Queue<ViewCommand<V>> currentCommands, ViewCommand<V> command) {
-        currentCommands.remove();
+        StateStrategyUtils.removeCommand(currentCommands, command);
     }
 }
