@@ -1,4 +1,4 @@
-package serg.chuprin.sample.view;
+package serg.chuprin.sample.users.info.view;
 
 import android.os.Bundle;
 import android.widget.TextView;
@@ -8,9 +8,9 @@ import javax.inject.Inject;
 import serg.chuprin.mvp_core.android.MvpActivity;
 import serg.chuprin.sample.R;
 import serg.chuprin.sample.SampleApplication;
-import serg.chuprin.sample.UserPresenter;
-import serg.chuprin.sample.di.UserComponent;
-import serg.chuprin.sample.di.UserModule;
+import serg.chuprin.sample.users.info.di.UserComponent;
+import serg.chuprin.sample.users.info.di.UserModule;
+import serg.chuprin.sample.users.info.model.UserPresenter;
 
 public class UserActivity extends MvpActivity<UserPresenter> implements UserView {
 

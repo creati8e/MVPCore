@@ -10,12 +10,13 @@ import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.view.MvpView;
 
 
-@SuppressWarnings({"unchecked", "unused"})
-public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends BottomSheetDialogFragment
+@SuppressWarnings({"unused"})
+public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter>
+        extends BottomSheetDialogFragment
         implements MvpView, ComponentHolder {
 
+    private boolean isStateSaved;
     private MvpDelegate<PRESENTER> mvpDelegate;
-    private boolean mIsStateSaved;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,40 +27,46 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends Bot
     @Override
     public void onStart() {
         super.onStart();
-        mIsStateSaved = false;
+        isStateSaved = false;
         mvpDelegate.attachView();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mIsStateSaved = false;
-        mvpDelegate.resume();
+        isStateSaved = false;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mIsStateSaved = true;
+        isStateSaved = true;
         mvpDelegate.saveState(outState);
+        mvpDelegate.detachView();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mvpDelegate.stop(true);
+        mvpDelegate.detachView();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mvpDelegate.detachView();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         if (getActivity().isFinishing()) {
-            mvpDelegate.stop(false);
+            mvpDelegate.destroy();
             mvpDelegate = null;
             return;
         }
-        if (mIsStateSaved) {
-            mIsStateSaved = false;
+        if (isStateSaved) {
+            isStateSaved = false;
             return;
         }
         boolean anyParentIsRemoving = false;
@@ -71,16 +78,18 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter> extends Bot
         }
 
         if (isRemoving() || anyParentIsRemoving) {
-            mvpDelegate.stop(false);
+            mvpDelegate.destroy();
             mvpDelegate = null;
             return;
         }
-        mvpDelegate.stop(true);
+        mvpDelegate.destroy();
     }
 
     protected MvpDelegate<PRESENTER> getMvpDelegate() {
         return mvpDelegate;
     }
+
+    protected abstract int getLayoutRes();
 
     protected final PRESENTER getPresenter() {
         return mvpDelegate.getPresenter();

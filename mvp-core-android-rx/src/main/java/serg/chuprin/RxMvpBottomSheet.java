@@ -5,7 +5,7 @@ import io.reactivex.disposables.Disposable;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.android.MvpBottomSheet;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({ "unused" })
 public abstract class RxMvpBottomSheet<PRESENTER extends MvpPresenter>
         extends MvpBottomSheet<PRESENTER> {
 

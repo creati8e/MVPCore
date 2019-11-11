@@ -1,11 +1,12 @@
 apply plugin: 'java'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //noinspection GradleDependency
     compileOnly 'com.google.android:android:1.5_r3'
 }
 
 //noinspection GroovyUnusedAssignment
-sourceCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
 //noinspection GroovyUnusedAssignment
-targetCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_8

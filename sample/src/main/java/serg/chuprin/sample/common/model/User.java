@@ -1,4 +1,4 @@
-package serg.chuprin.sample.model;
+package serg.chuprin.sample.common.model;
 
 public class User {
     private final String username;

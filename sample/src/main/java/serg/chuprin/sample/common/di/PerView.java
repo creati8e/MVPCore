@@ -1,4 +1,4 @@
-package serg.chuprin.sample.di;
+package serg.chuprin.sample.common.di;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

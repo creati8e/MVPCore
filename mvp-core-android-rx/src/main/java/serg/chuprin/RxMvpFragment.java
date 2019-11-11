@@ -5,7 +5,7 @@ import io.reactivex.disposables.Disposable;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.android.MvpFragment;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({ "unused" })
 public abstract class RxMvpFragment<PRESENTER extends MvpPresenter> extends MvpFragment<PRESENTER> {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();

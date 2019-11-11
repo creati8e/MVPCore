@@ -2,8 +2,8 @@ package serg.chuprin.sample;
 
 import android.app.Application;
 
-import serg.chuprin.sample.di.AppComponent;
-import serg.chuprin.sample.di.DaggerAppComponent;
+import serg.chuprin.sample.common.di.AppComponent;
+import serg.chuprin.sample.common.di.DaggerAppComponent;
 
 public class SampleApplication extends Application {
 

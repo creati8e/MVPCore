@@ -90,7 +90,7 @@ public class MvpProcessor extends AbstractProcessor {
             }
 
             TypeElement viewType = getViewType(presenterType);
-            if (viewType==null) {
+            if (viewType == null) {
                 error(presenterType,
                         "Your presenter is typed. Please specify your view in annotation",
                         presenterType);

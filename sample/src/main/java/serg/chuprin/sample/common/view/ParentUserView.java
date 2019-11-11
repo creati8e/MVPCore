@@ -1,4 +1,4 @@
-package serg.chuprin.sample.view;
+package serg.chuprin.sample.common.view;
 
 import serg.chuprin.mvp_core.annotations.StateStrategyType;
 import serg.chuprin.mvp_core.view.MvpView;

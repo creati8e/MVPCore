@@ -8,8 +8,7 @@ import serg.chuprin.mvp_core.MvpDelegate;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.view.MvpView;
 
-
-@SuppressWarnings({"unchecked", "unused"})
+@SuppressWarnings({"unused"})
 public abstract class MvpActivity<PRESENTER extends MvpPresenter>
         extends AppCompatActivity
         implements MvpView, ComponentHolder {
@@ -30,27 +29,26 @@ public abstract class MvpActivity<PRESENTER extends MvpPresenter>
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mvpDelegate.resume();
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mvpDelegate.saveState(outState);
+        mvpDelegate.detachView();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mvpDelegate.stop(isChangingConfigurations());
+        mvpDelegate.detachView();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mvpDelegate = null;
+        if (isFinishing()) {
+            mvpDelegate.destroyView();
+            mvpDelegate.destroy();
+            mvpDelegate = null;
+        }
     }
 
     protected MvpDelegate<PRESENTER> getMvpDelegate() {
