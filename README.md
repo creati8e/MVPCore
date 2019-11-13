@@ -1,45 +1,32 @@
 # MvpCore
-MvpCore is a tiny library to setup Mvp pattern in your app, based on Dagger 2 and powered with RxJava.
+MvpCore is a tiny library to setup MVP pattern in your app, based on Dagger 2.
 
 # Setup
 
-Latest version is **1.0.5**
+Latest version is **1.0.7**
 
 First add repository to your project's *build.gradle* 
 ```groovy
 allprojects {
     repositories {
-        ...
-        maven { url "http://dl.bintray.com/creati8e/maven" }
+        jcenter()
     }
 }
 ```
 Add dependencies to your app's *build.gradle* 
 ```groovy
 dependencies {
-    ...
-
-    compile 'serg.chuprin:mvp-core:1.0.5'
-    compile 'serg.chuprin:mvp-core-android:1.0.5'
-    apt 'serg.chuprin:mvp-core-processor:1.0.5'
+   
+    compile 'serg.chuprin:mvp-core:$latestVersion'
+    compile 'serg.chuprin:mvp-core-android:$latestVersion'
+    kapt 'serg.chuprin:mvp-core-processor:$latestVersion'
     
     // As far as lib based on Dagger components caching, you should include dagger's dependencies
-    compile 'com.google.dagger:dagger:2.10'
-    apt 'com.google.dagger:dagger-compiler:2.10'
+    compile 'com.google.dagger:dagger:$latestVersion'
+    kapt 'com.google.dagger:dagger-compiler:$latestVersion'
 }
 ```
 
-If you want to use MvpCore with Kotlin, use *kapt* instead of *apt*.
-Also you should add these lines
-
-```groovy
-android {
-    ...
-    kapt {
-        generateStubs = true
-    }
-}
-```
 # How it works
 Library is based on dagger's components caching. So all dependencies (presenters) are retained across configuration change.
 You don't need to manually inject library, it is done automatically via reflection.
@@ -91,41 +78,12 @@ interface UserView : MvpView {
 ## Lifecycle
 View is attached in *onStart* method and detached in *onStop* method.
 
-## RxJava support
-
-To get RxJava2 advantages, you need add these dependencies:
-
-```groovy
-android {
-    ...
-   dependencies {
-   
-       compile 'serg.chuprin:mvp-core-rx:1.0.5'
-       compile 'serg.chuprin:mvp-core-android-rx:1.0.5'
-       
-       //in this case you don't need to inlclude default dependencies ("serg.chuprin:mvp-core" and "serg.chuprin:mvp-core-android-rx")
-   }
-}
-```
-
-### Available methods:
-
-RxMvpPresenter and Rx android views (activities and fragments):
-
-* void subscribeView(Disposable disposable) in presenter; void addDisposable(Disposable disposable) in android views
-* void unsubscribeAll()
-* boolean removeDisposable(Disposable disposable)
-* CompositeDisposable getCompositeDisposable()
-
-Subscription list will be cleared when view is detached (for presenter).
-And in *onStop* (for android views).
-
 # How to
 
 * Create *AppComponent* and initialize it in Application class
  
 ```kotlin
-@Component(modules = arrayOf(/*your modules*/))
+@Component(modules = [/*your modules*/])
 @Singleton
 interface AppComponent {
 
@@ -136,7 +94,7 @@ interface AppComponent {
 ```
 
 ```kotlin
-class YourAppication : Application() {
+class YourApplication : Application() {
 
     companion object {
         lateinit var component: AppComponent
@@ -154,8 +112,7 @@ class YourAppication : Application() {
 ```kotlin
 @Scope
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PerView {
-}
+@annotation class PerView
 ```
 
 * Create module and subcomponent for your feature.
@@ -163,13 +120,11 @@ public @interface PerView {
 Module:
 
 ```kotlin
-@Module class UserModule() {
+@Module class UserModule {
 
     @Provides
     @PerView
-    fun providePresenter(): UserPresenter {
-        return UserPresenter()
-    }
+    fun providePresenter(): UserPresenter = UserPresenter()
 }
 ```
 Subcomponent:
@@ -185,8 +140,9 @@ interface UserComponent {
 * Create presenter
  
 ```kotlin
-class UserPresenter @Inject constructor(/*your injected dependencies*/): MvpPresenter<UserView> {
-}
+class UserPresenter @Inject constructor(
+/*your injected dependencies*/
+): MvpPresenter<UserView>
 ```
 
 * Create view interface
@@ -195,7 +151,8 @@ class UserPresenter @Inject constructor(/*your injected dependencies*/): MvpPres
 interface UserView: MvpView
 ```
 
-* Create activity/fragment which implements this interface and overrides **createComponent** and **componentClass** methods
+* Create activity/fragment which implements this interface and overrides 
+**createComponent** and **componentClass** methods
 
 ```kotlin
 class UserActivity : MvpActivity<UserPresenter>(), UserView {
