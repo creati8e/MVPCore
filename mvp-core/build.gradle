@@ -1,7 +1,10 @@
 apply plugin: 'java'
-apply from: 'install.gradle'
-apply from: 'bintray.gradle'
-apply from: '../publication.gradle'
+
+ext.artifactId = 'mvp-core'
+apply from: '../bintray/install.gradle'
+apply from: '../bintray/bintray.gradle'
+
+apply from: '../bintray/local_publication.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

@@ -1,14 +1,18 @@
 apply plugin: 'java'
-apply from: 'install.gradle'
-apply from: 'bintray.gradle'
-apply from: '../publication.gradle'
+
+ext.artifactId = 'mvp-core-android'
+apply from: '../bintray/install.gradle'
+apply from: '../bintray/bintray.gradle'
+
+apply from: '../bintray/local_publication.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     implementation project(':mvp-core')
-    compileOnly 'com.google.android:android:4.1.1.4'
 
     compileOnly project(':stub-android')
+    compileOnly 'com.google.android:android:4.1.1.4'
 }
 
 //noinspection GroovyUnusedAssignment
