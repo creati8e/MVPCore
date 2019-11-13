@@ -88,8 +88,6 @@ public abstract class MvpDialogFragment<PRESENTER extends MvpPresenter> extends 
         return mvpDelegate;
     }
 
-    protected abstract int getLayoutRes();
-
     protected final PRESENTER getPresenter() {
         return mvpDelegate.getPresenter();
     }

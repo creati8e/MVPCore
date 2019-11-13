@@ -89,8 +89,6 @@ public abstract class MvpBottomSheet<PRESENTER extends MvpPresenter>
         return mvpDelegate;
     }
 
-    protected abstract int getLayoutRes();
-
     protected final PRESENTER getPresenter() {
         return mvpDelegate.getPresenter();
     }

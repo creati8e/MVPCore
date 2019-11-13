@@ -1,4 +1,6 @@
 include ':mvp-core',
+        ':mvp-core-android-rx',
+        ':mvp-core-rx',
         ':mvp-core-android',
         ':stub-android',
         ':sample',

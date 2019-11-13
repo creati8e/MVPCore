@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply from: 'install.gradle'
 apply from: 'bintray.gradle'
+apply from: '../publication.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

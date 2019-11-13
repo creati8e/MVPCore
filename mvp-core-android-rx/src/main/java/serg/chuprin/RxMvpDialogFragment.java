@@ -5,7 +5,7 @@ import io.reactivex.disposables.Disposable;
 import serg.chuprin.mvp_core.MvpPresenter;
 import serg.chuprin.mvp_core.android.MvpDialogFragment;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"unused"})
 public abstract class RxMvpDialogFragment<PRESENTER extends MvpPresenter>
         extends MvpDialogFragment<PRESENTER> {
 
