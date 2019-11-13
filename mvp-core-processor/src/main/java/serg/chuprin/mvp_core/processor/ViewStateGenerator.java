@@ -378,7 +378,7 @@ class ViewStateGenerator {
     }
 
     /**
-     * @return Map<String,String> contains generic types mapping to arguments. I.e S -> String
+     * @return Map<String , String> contains generic types mapping to arguments. I.e S -> String
      */
     private Map<String, String> getInterfaceTypeMapping(TypeMirror interfaceMirror) {
         DeclaredType declaredType = (DeclaredType) interfaceMirror;
@@ -440,9 +440,9 @@ class ViewStateGenerator {
      * @param mirror   toString() gives: android.util.Pair<MODEL,API>
      * @param typesMap map with types and their arguments. For example: MODEL -> java.lang.Boolean
      * @return TypeName which represents type with resolved generic types.
-     * typesMap: MODEL -> java.lang.Boolean, API -> serg.chuprin.sample.model.User
+     * typesMap: MODEL -> java.lang.Boolean, API -> serg.chuprin.sample.common.model.User
      * Input: android.util.Pair<MODEL,API>
-     * Output: android.util.Pair<java.lang.Boolean,serg.chuprin.sample.model.User>
+     * Output: android.util.Pair<java.lang.Boolean,serg.chuprin.sample.common.model.User>
      */
     private TypeName inferTypeName(TypeMirror mirror, Map<String, String> typesMap) {
 
@@ -476,7 +476,7 @@ class ViewStateGenerator {
             char genericArg = arg.charAt(0);
 
             for (int i = 1; i < typeStr.length() - 1; ++i) {
-                if (typeStr.charAt(i) == genericArg && isGenericType(typeStr, i, i) && i > -1) {
+                if (typeStr.charAt(i) == genericArg && isGenericType(typeStr, i, i)) {
                     bundles.add(new ReplacementBundle(i, String.valueOf(genericArg), value));
                 }
             }
@@ -493,7 +493,7 @@ class ViewStateGenerator {
 
                 if (startIndex > 0 && lastIndex < typeStr.length()
                         && isGenericType(typeStr, startIndex, lastIndex)) {
-                    bundles.add(new ReplacementBundle(startIndex, String.valueOf(arg), value));
+                    bundles.add(new ReplacementBundle(startIndex, arg, value));
                 }
             }
         }

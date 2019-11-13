@@ -1,0 +1,9 @@
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        mavenAar(MavenPublication) {
+            from components.java
+        }
+    }
+}

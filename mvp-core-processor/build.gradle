@@ -1,15 +1,20 @@
 apply plugin: 'java'
-apply from: 'install.gradle'
-apply from: 'bintray.gradle'
+
+ext.artifactId = 'mvp-core-processor'
+apply from: '../bintray/install.gradle'
+apply from: '../bintray/bintray.gradle'
+
+apply from: '../bintray/local_publication.gradle'
 
 configurations {
     libraries
 }
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.google.auto.service:auto-service:1.0-rc2'
-    compile project(':mvp-core')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':mvp-core')
     libraries files('libs/javapoet.jar')
+    implementation 'com.google.auto.service:auto-service:1.0-rc6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
 }
 
 jar {
@@ -17,6 +22,6 @@ jar {
 }
 
 //noinspection GroovyUnusedAssignment
-sourceCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
 //noinspection GroovyUnusedAssignment
-targetCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_8

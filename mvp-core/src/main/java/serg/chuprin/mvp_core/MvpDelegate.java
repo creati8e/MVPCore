@@ -11,50 +11,50 @@ import serg.chuprin.mvp_core.view.MvpView;
 
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MvpDelegate<PRESENTER extends MvpPresenter> {
-    private final ComponentCache componentCache = ComponentCache.getInstance();
-    private final MvpView view;
-    private final ComponentHolder holder;
-    private final PRESENTER presenter;
-    public Object component;
-    private boolean isRecreating;
 
-    public <V extends MvpView & ComponentHolder> MvpDelegate(V viewHolder, Bundle bundle) {
-        view = viewHolder;
-        holder = viewHolder;
+    public Object component;
+
+    private final MvpView view;
+    private final PRESENTER presenter;
+    private final ComponentHolder holder;
+    private final ComponentCache componentCache = ComponentCache.getInstance();
+
+    public <V extends MvpView & ComponentHolder> MvpDelegate(V viewComponentHolder, Bundle bundle) {
+        view = viewComponentHolder;
+        holder = viewComponentHolder;
         component = findCachedComponent(bundle);
         inject();
         presenter = findPresenter();
-    }
-
-    public void stop(boolean retainComponent) {
-        presenter.detachView();
-        if (!isRecreating && !retainComponent) {
-            componentCache.delete(component);
-            presenter.destroyView();
-            component = null;
-        }
-    }
-
-    public void saveState(Bundle bundle) {
-        isRecreating = true;
-        if (bundle != null) {
-            componentCache.save(bundle, component);
-        }
     }
 
     public void attachView() {
         presenter.attachView(view);
     }
 
+    public void saveState(Bundle bundle) {
+        if (bundle != null) {
+            componentCache.save(bundle, component);
+        }
+    }
+
+    public void detachView() {
+        presenter.detachView();
+    }
+
+    public void destroyView() {
+        presenter.destroyView();
+    }
+
+    public void destroy() {
+        componentCache.delete(component);
+        component = null;
+    }
+
     public PRESENTER getPresenter() {
         return presenter;
     }
 
-    public void resume() {
-        isRecreating = false;
-    }
-
-    //region internal
+    // region internal
 
     private PRESENTER findPresenter() {
         for (Field field : view.getClass().getDeclaredFields()) {
@@ -77,13 +77,15 @@ public class MvpDelegate<PRESENTER extends MvpPresenter> {
             Class viewClass = view.getClass();
             Class componentClass = component.getClass();
             Method[] methods = componentClass.getMethods();
+
             for (Method method : methods) {
-                Class types[] = method.getParameterTypes();
-                if (method.getName().startsWith("inject") &&
-                        types != null && types.length == 1 &&
-                        types[0].isAssignableFrom(viewClass)) {
+                Class[] types = method.getParameterTypes();
+                if (method.getName().startsWith("inject")
+                        && types.length == 1
+                        && types[0].isAssignableFrom(viewClass)
+                ) {
                     method.invoke(component, view);
-                    return; // all ok
+                    return;
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -106,7 +108,8 @@ public class MvpDelegate<PRESENTER extends MvpPresenter> {
         }
     }
 
-    //endregion
+    // endregion
+
 }
 
 

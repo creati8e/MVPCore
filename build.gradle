@@ -12,26 +12,32 @@ subprojects {
 buildscript {
     repositories {
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'digital.wup:android-maven-publish:3.6.3'
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+        google()
         maven { url "http://dl.bintray.com/creati8e/maven" }
     }
     project.ext {
-        supportVersion = '25.3.1'
-        buildToolsVersion = '25.0.3'
+        libVersion = '1.0.7'
+        rxJavaVersion = '2.2.13'
+        supportVersion = '28.0.0'
+        buildToolsVersion = '28.0.3'
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+apply plugin: 'digital.wup.android-maven-publish'
